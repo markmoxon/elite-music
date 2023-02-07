@@ -102,8 +102,9 @@ PRINT "          alignment lost",(P%-H%),"bytes"
 PRINT "           total size is",(end-start),"bytes"
 
 ; save file for SWRAM.
-SAVE "Music", start, end, start
+SAVE "elite-music.rom", start, end, start
 
 
 ; test program.
 PUTBASIC "test-music.bas", "Test"
+PUTFILE "elite-music.rom", "Music", start, start
