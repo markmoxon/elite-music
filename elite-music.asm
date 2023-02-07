@@ -15,8 +15,8 @@ INCLUDE "lib/vgcplayer_config.h.asm"
 
 ; Allocate vars in ZP
 .zp_start
-ORG &70
-GUARD &8e
+ORG &92
+GUARD &9E
 
 INCLUDE "lib/vgcplayer.h.asm"
 .zp_end
