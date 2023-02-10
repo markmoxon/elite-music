@@ -40,7 +40,7 @@ GUARD &C000
 jmp init_tune1  ; &8000
 jmp init_tune2  ; &8003
 jmp vgm_update  ; &8006
-jmp ResetMusic  ; &8009 \ MM - added to reset Elite envelopes after music stops
+jmp StopMusic   ; &8009 \ MM - moved into sideways RAM to save a few bytes
 
 ; code routines
 
@@ -65,10 +65,10 @@ jmp ResetMusic  ; &8009 \ MM - added to reset Elite envelopes after music stops
     jmp vgm_init
 }
 
-.ResetMusic
+.StopMusic
 {
-                        \ MM - routine added to enable sounds to be reset, using
-                        \ the envelope definitions from elite-loader3.asm
+                        \ MM - routine added to stop music, to save a few bytes
+                        \ in the main Elite codebase
 
  musicStatus = &9B
  PlayMusic = &11FE
