@@ -83,7 +83,8 @@ jmp ResetMusic  ; &8009 \ MM - added to reset Elite envelopes after music stops
 
  LDA #%11100110         \ Set noise control (%1110) to white noise (%x1) with
  JSR sn_write           \ high frequency (%10), so the launch sound doesn't get
-                        \ corrupted
+                        \ corrupted (this sets the sound chip to the same value
+                        \ as SOUND &10, &F1, &06, &0C (for the launch sound)
 
  LDA #3                 \ Select the docking music
  JSR PlayMusic
