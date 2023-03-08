@@ -39,7 +39,7 @@ GUARD &C000
 .jumptable
 jmp init_tune1  ; &8000
 jmp init_tune2  ; &8003
-jmp vgm_update  ; &8006
+jmp PlayMusic   ; &8006 \ MM - added check to skip playing if sound is disabled
 jmp StopMusic   ; &8009 \ MM - moved into sideways RAM to save a few bytes
 
 ; code routines
@@ -93,6 +93,21 @@ jmp StopMusic   ; &8009 \ MM - moved into sideways RAM to save a few bytes
  STA play1+1            \ next call
 
  RTS                    \ Return from the subroutine
+}
+
+.PlayMusic
+{
+ DNOIZ = &03C6
+
+ LDA DNOIZ              \ Set A to the DNOIZ configuration setting
+
+ BNE P%+5               \ If DNOIZ is non-zero, then sound is disabled, so jump
+                        \ to the RTS to return from the subroutine
+
+ JMP vgm_update         \ Otherwise sound is enables, so jump to vgm_update to
+                        \ play the music
+
+ RTS                    \ Sound is disabled, so return from the subroutine
 }
 
 ; library code
