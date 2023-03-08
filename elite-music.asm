@@ -21,6 +21,15 @@ GUARD &9E
 INCLUDE "lib/vgcplayer.h.asm"
 .zp_end
 
+\ MM - Variables from main Elite source
+
+DL              = &008B
+musicStatus     = &009B
+NOSTM           = &03C3
+DNOIZ           = &03C6
+S%              = $11E3
+PlayMusic       = &11FE
+play1           = &120F
 
 ;-------------------------------------------
 ; swram bank
@@ -37,15 +46,21 @@ GUARD &C000
 ;-------------------------------------------
 
 .jumptable
-jmp init_tune1  ; &8000
-jmp init_tune2  ; &8003
-jmp PlayMusic   ; &8006 \ MM - added check to skip playing if sound is disabled
-jmp StopMusic   ; &8009 \ MM - moved into sideways RAM to save a few bytes
+jmp init_tune1      ; &8000
+jmp init_tune2      ; &8003
+jmp PlayCurrentTune ; &8006 \ MM - added check to skip playing if sound is disabled
+jmp StopCurrentTune ; &8009 \ MM - moved into sideways RAM to save a few bytes
+jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
 
 ; code routines
 
 .init_tune1
 {
+    BIT NOSTM+1         \ If bit 6 of NOSTM+1 is set then tunes are swapped, so 
+    BVS init_tune2s     \ initialise tune 2 instead
+
+.^init_tune1s
+
     ; initialize the vgm player with a vgc data stream
     lda #hi(vgm_stream_buffers)
     ldx #lo(vgm_data1)
@@ -57,6 +72,11 @@ jmp StopMusic   ; &8009 \ MM - moved into sideways RAM to save a few bytes
 ; set carry to enable looping
 .init_tune2
 {
+    BIT NOSTM+1         \ If bit 6 of NOSTM+1 is set then tunes are swapped, so 
+    BVS init_tune1s     \ initialise tune 1 instead
+
+.^init_tune2s
+
     ; initialize the vgm player with a vgc data stream
     lda #hi(vgm_stream_buffers)
     ldx #lo(vgm_data2)
@@ -65,14 +85,11 @@ jmp StopMusic   ; &8009 \ MM - moved into sideways RAM to save a few bytes
     jmp vgm_init
 }
 
-.StopMusic
+.StopCurrentTune
 {
+
                         \ MM - routine added to stop music, to save a few bytes
                         \ in the main Elite codebase
-
- musicStatus = &9B
- PlayMusic = &11FE
- play1 = &120F
 
  LDA #0                 \ Clear the status flag to indicate we are not playing
  STA musicStatus        \ any music
@@ -86,28 +103,127 @@ jmp StopMusic   ; &8009 \ MM - moved into sideways RAM to save a few bytes
                         \ corrupted (this sets the sound chip to the same value
                         \ as SOUND &10, &F1, &06, &0C (for the launch sound)
 
- LDA #3                 \ Select the docking music
- JSR PlayMusic
+ JSR init_tune2         \ Select the docking music
 
  LDA #6                 \ Modify the PlayMusic routine so it plays music on the
  STA play1+1            \ next call
 
  RTS                    \ Return from the subroutine
+
 }
 
-.PlayMusic
+.PlayCurrentTune
 {
- DNOIZ = &03C6
 
- LDA DNOIZ              \ Set A to the DNOIZ configuration setting
+                        \ MM - routine added to play music, which checks to see
+                        \ whether sound is enabled before playing anything
 
- BNE P%+5               \ If DNOIZ is non-zero, then sound is disabled, so jump
-                        \ to the RTS to return from the subroutine
+ LDA DNOIZ              \ If DNOIZ is non-zero, then sound is disabled, so
+ BNE play1              \ return from the subroutine
 
- JMP vgm_update         \ Otherwise sound is enables, so jump to vgm_update to
+ BIT NOSTM+1            \ If bit 7 of NOSTM+1 is set then music is disabled, so
+ BMI play1              \ return from the subroutine
+
+ JMP vgm_update         \ Otherwise sound is enabled, so jump to vgm_update to
                         \ play the music
 
+.play1
+
  RTS                    \ Sound is disabled, so return from the subroutine
+
+}
+
+.ProcessOptions
+{
+
+                        \ MM - routine added to process music-related pause
+                        \ options, as well as the "Q" option where the patch is
+                        \ injected
+                        \
+                        \ We store the music options state in NOSTM+1, which is
+                        \ otherwise unused:
+                        \
+                        \   * Bit 7 set = disable music
+                        \           clear = enable music (default)
+                        \
+                        \   * Bit 6 set = swap tunes 1 and 2
+                        \           clear = default tunes (default)
+
+                        \ We start with the "Q" logic that we replaced with the
+                        \ injected call to this routine
+
+ CPX #&10               \ If "Q" is not being pressed, skip to DK7
+ BNE DK7
+
+ STX DNOIZ              \ "Q" is being pressed, so set DNOIZ to X, which is
+                        \ non-zero (&10), so this will turn the sound off
+
+ JSR StopCurrentTune    \ Stop the current tune
+
+.DK7
+
+                        \ The new "M" option switched music on and off
+
+ CPX #&65               \ If "M" is not being pressed, skip to opts1
+ BNE opts1
+
+ JSR StopCurrentTune    \ Stop the current tune
+
+ LDA #%10000000         \ "M" is being pressed, so flip bit 7 of NOSTM+1
+ EOR NOSTM+1
+ STA NOSTM+1
+
+ JMP opts4              \ Return from the subroutine with the C flag set, so
+                        \ can make a beep and delay for a bit
+
+.opts1
+
+                        \ The new "E" option swaps the docking and title tunes
+
+ CPX #&22               \ If "E" is not being pressed, skip to opts3
+ BNE opts3
+
+ LDA musicStatus        \ Store the flags for musicStatus on the stack 
+ PHA
+
+ JSR StopCurrentTune    \ Stop the current tune
+
+ LDA #%01000000         \ "E" is being pressed, so flip bit 7 of NOSTM+1
+ EOR NOSTM+1
+ STA NOSTM+1
+
+ JSR init_tune2         \ Select the docking music
+
+ PLA                    \ If we were not playing music before we switched tunes,
+ BEQ opts2              \ jump to opts2
+
+ LDA #6                 \ Modify the PlayMusic routine so it plays music on the
+ STA play1+1            \ next call
+
+ STA musicStatus        \ Start playing music again by setting musicStatus to
+                        \ a non-zero value
+
+.opts2
+
+ JMP opts4              \ Return from the subroutine with the C flag set, so
+                        \ can make a beep and delay for a bit
+
+.opts3
+
+ LDA #6                 \ Modify the PlayMusic routine so it plays music on the
+ STA play1+1            \ next call
+
+ CLC                    \ Return from the subroutine with the C flag clear so
+ RTS                    \ we know not to make a beep
+
+.opts4
+
+ LDA #6                 \ Modify the PlayMusic routine so it plays music on the
+ STA play1+1            \ next call
+
+ SEC                    \ Return from the subroutine with the C flag set, so
+ RTS                    \ can make a beep and delay for a bit
+
 }
 
 ; library code
