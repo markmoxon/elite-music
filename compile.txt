@@ -467,4 +467,4 @@ total vgm player size is725 bytes
 .vgm_buffer_end
 .end
            total size is3400 bytes
-Saving file 'elite-music.rom'
+Saving file 'elite-music-disc.rom'

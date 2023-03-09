@@ -21,15 +21,45 @@ GUARD &9E
 INCLUDE "lib/vgcplayer.h.asm"
 .zp_end
 
-\ MM - Variables from main Elite source
+\ MM - Set addresses from main Elite source
 
-DL              = &008B
-musicStatus     = &009B
-NOSTM           = &03C3
-DNOIZ           = &03C6
-S%              = $11E3
-PlayMusic       = &11FE
-play1           = &120F
+INCLUDE "elite-music-build-options.asm"
+
+_DISC_VERSION           = (_VARIANT = 1)
+_MASTER_VERSION         = (_VARIANT = 2)
+_6502SP_VERSION         = (_VARIANT = 3)
+
+IF _DISC_VERSION
+
+ DL             = &008B
+ musicStatus    = &009B
+ musicOptions   = &03C4     \ NOSTM+1, which is unused in the disc version
+ DNOIZ          = &03C6
+ S%             = $11E3
+ PlayMusic      = &11FE
+ play1          = &120F
+
+ELIF IF _MASTER_VERSION
+
+ DL             = &008B
+ musicStatus    = &009B
+ musicOptions   = &03C4
+ DNOIZ          = &03C6
+ S%             = $11E3
+ PlayMusic      = &11FE
+ play1          = &120F
+
+ELIF IF _6502SP_VERSION
+
+ DL             = &008B
+ musicStatus    = &009B
+ musicOptions   = &03C4
+ DNOIZ          = &03C6
+ S%             = $11E3
+ PlayMusic      = &11FE
+ play1          = &120F
+
+ENDIF
 
 ;-------------------------------------------
 ; swram bank
@@ -56,8 +86,8 @@ jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
 
 .init_tune1
 {
-    BIT NOSTM+1         \ If bit 6 of NOSTM+1 is set then tunes are swapped, so 
-    BVS init_tune2s     \ initialise tune 2 instead
+    BIT musicOptions    \ MM - If bit 6 of musicOptions is set then tunes are
+    BVS init_tune2s     \ swapped, so initialise tune 2 instead
 
 .^init_tune1s
 
@@ -72,8 +102,8 @@ jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
 ; set carry to enable looping
 .init_tune2
 {
-    BIT NOSTM+1         \ If bit 6 of NOSTM+1 is set then tunes are swapped, so 
-    BVS init_tune1s     \ initialise tune 1 instead
+    BIT musicOptions    \ MM - If bit 6 of musicOptions is set then tunes are
+    BVS init_tune1s     \ swapped, so  initialise tune 1 instead
 
 .^init_tune2s
 
@@ -121,8 +151,8 @@ jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
  LDA DNOIZ              \ If DNOIZ is non-zero, then sound is disabled, so
  BNE play1              \ return from the subroutine
 
- BIT NOSTM+1            \ If bit 7 of NOSTM+1 is set then music is disabled, so
- BMI play1              \ return from the subroutine
+ BIT musicOptions       \ If bit 7 of musicOptions is set then music is
+ BMI play1              \ disabled, so return from the subroutine
 
  JMP vgm_update         \ Otherwise sound is enabled, so jump to vgm_update to
                         \ play the music
@@ -140,8 +170,7 @@ jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
                         \ options, as well as the "Q" option where the patch is
                         \ injected
                         \
-                        \ We store the music options state in NOSTM+1, which is
-                        \ otherwise unused:
+                        \ We store the music options in musicOptions as follows:
                         \
                         \   * Bit 7 set = disable music
                         \           clear = enable music (default)
@@ -169,9 +198,9 @@ jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
 
  JSR StopCurrentTune    \ Stop the current tune
 
- LDA #%10000000         \ "M" is being pressed, so flip bit 7 of NOSTM+1
- EOR NOSTM+1
- STA NOSTM+1
+ LDA #%10000000         \ "M" is being pressed, so flip bit 7 of musicOptions
+ EOR musicOptions
+ STA musicOptions
 
  JMP opts4              \ Return from the subroutine with the C flag set, so
                         \ can make a beep and delay for a bit
@@ -188,9 +217,9 @@ jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
 
  JSR StopCurrentTune    \ Stop the current tune
 
- LDA #%01000000         \ "E" is being pressed, so flip bit 7 of NOSTM+1
- EOR NOSTM+1
- STA NOSTM+1
+ LDA #%01000000         \ "E" is being pressed, so flip bit 7 of musicOptions
+ EOR musicOptions
+ STA musicOptions
 
  JSR init_tune2         \ Select the docking music
 
@@ -263,10 +292,16 @@ PRINT "          alignment lost",(P%-H%),"bytes"
 
 PRINT "           total size is",(end-start),"bytes"
 
-; save file for SWRAM.
-SAVE "elite-music-disc.rom", start, end, start
+IF _DISC_VERSION
 
+ SAVE "elite-music-disc.rom", start, end, start
 
-; test program.
-PUTBASIC "test-music.bas", "Test"
-PUTFILE "elite-music-disc.rom", "Music", start, start
+ELIF IF _MASTER_VERSION
+
+ SAVE "elite-music-master.rom", start, end, start
+
+ELIF IF _6502SP_VERSION
+
+ SAVE "elite-music-6502sp.rom", start, end, start
+
+ENDIF
