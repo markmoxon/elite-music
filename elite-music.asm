@@ -21,31 +21,40 @@ IF _DISC_VERSION
  musicStatus    = &009B
  musicOptions   = &03C4     \ NOSTM+1, which is unused in the disc version
  DNOIZ          = &03C6
- S%             = $11E3
  PlayMusic      = &11FE
  play1          = &120F
 
-ELIF IF _MASTER_VERSION
+ keyE           = &22
+ keyM           = &65
+ keyQ           = &10
+
+ELIF _MASTER_VERSION
+
+ DL             = &005B
+ musicWorkspace = &008C
+ musicStatus    = &0095
+ musicOptions   = &2C41     \ COMC+1, which is unused in the Master version
+ DNOIZ          = &2C55
+ PlayMusic      = &2D5F
+ play1          = &2D70
+
+ keyE           = &45
+ keyM           = &4D
+ keyQ           = &51
+
+ELIF _6502SP_VERSION
 
  DL             = &008B
  musicWorkspace = &0092
  musicStatus    = &009B
  musicOptions   = &03C4
  DNOIZ          = &03C6
- S%             = $11E3
  PlayMusic      = &11FE
  play1          = &120F
 
-ELIF IF _6502SP_VERSION
-
- DL             = &008B
- musicWorkspace = &0092
- musicStatus    = &009B
- musicOptions   = &03C4
- DNOIZ          = &03C6
- S%             = $11E3
- PlayMusic      = &11FE
- play1          = &120F
+ keyE           = &45
+ keyM           = &4D
+ keyQ           = &51
 
 ENDIF
 
@@ -59,7 +68,7 @@ INCLUDE "lib/vgcplayer_config.h.asm"
 ; Allocate vars in ZP
 .zp_start
 ORG musicWorkspace      \ MM - changed to match zero page free space in Elite
-GUARD &9E
+GUARD musicWorkspace+8
 
 INCLUDE "lib/vgcplayer.h.asm"
 .zp_end
@@ -184,7 +193,7 @@ jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
                         \ We start with the "Q" logic that we replaced with the
                         \ injected call to this routine
 
- CPX #&10               \ If "Q" is not being pressed, skip to DK7
+ CPX #keyQ              \ If "Q" is not being pressed, skip to DK7
  BNE DK7
 
  STX DNOIZ              \ "Q" is being pressed, so set DNOIZ to X, which is
@@ -196,7 +205,7 @@ jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
 
                         \ The new "M" option switched music on and off
 
- CPX #&65               \ If "M" is not being pressed, skip to opts1
+ CPX #keyM              \ If "M" is not being pressed, skip to opts1
  BNE opts1
 
  JSR StopCurrentTune    \ Stop the current tune
@@ -212,7 +221,7 @@ jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
 
                         \ The new "E" option swaps the docking and title tunes
 
- CPX #&22               \ If "E" is not being pressed, skip to opts3
+ CPX #keyE              \ If "E" is not being pressed, skip to opts3
  BNE opts3
 
  LDA musicStatus        \ Store the flags for musicStatus on the stack 
@@ -299,11 +308,11 @@ IF _DISC_VERSION
 
  SAVE "elite-music-disc.rom", start, end, start
 
-ELIF IF _MASTER_VERSION
+ELIF _MASTER_VERSION
 
  SAVE "elite-music-master.rom", start, end, start
 
-ELIF IF _6502SP_VERSION
+ELIF _6502SP_VERSION
 
  SAVE "elite-music-6502sp.rom", start, end, start
 

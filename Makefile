@@ -2,14 +2,14 @@ BEEBASM?=beebasm
 PYTHON?=python
 
 ifeq ($(variant), master)
-  variant=2
+  variant-music=2
 else ifeq ($(variant), 6502sp)
-  variant=3
+  variant-music=3
 else
-  variant=1
+  variant-music=1
 endif
 
 .PHONY:all
 all:
-	echo _VARIANT=$(variant) > elite-music-build-options.asm
+	echo _VARIANT=$(variant-music) > elite-music-build-options.asm
 	$(BEEBASM) -i elite-music.asm -v > compile.txt
