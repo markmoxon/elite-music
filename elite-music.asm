@@ -6,21 +6,6 @@
 ;******************************************************************
 
 
-;----------------------------------------------------------------------------------------------------------
-; Common code headers
-;----------------------------------------------------------------------------------------------------------
-; Include common code headers here - these can declare ZP vars from the pool using SKIP...
-
-INCLUDE "lib/vgcplayer_config.h.asm"
-
-; Allocate vars in ZP
-.zp_start
-ORG &92                 \ MM - changed to match zero page free space in disc Elite
-GUARD &9E
-
-INCLUDE "lib/vgcplayer.h.asm"
-.zp_end
-
 \ MM - Set addresses from main Elite source
 
 INCLUDE "elite-music-build-options.asm"
@@ -32,6 +17,7 @@ _6502SP_VERSION         = (_VARIANT = 3)
 IF _DISC_VERSION
 
  DL             = &008B
+ musicWorkspace = &0092
  musicStatus    = &009B
  musicOptions   = &03C4     \ NOSTM+1, which is unused in the disc version
  DNOIZ          = &03C6
@@ -42,6 +28,7 @@ IF _DISC_VERSION
 ELIF IF _MASTER_VERSION
 
  DL             = &008B
+ musicWorkspace = &0092
  musicStatus    = &009B
  musicOptions   = &03C4
  DNOIZ          = &03C6
@@ -52,6 +39,7 @@ ELIF IF _MASTER_VERSION
 ELIF IF _6502SP_VERSION
 
  DL             = &008B
+ musicWorkspace = &0092
  musicStatus    = &009B
  musicOptions   = &03C4
  DNOIZ          = &03C6
@@ -60,6 +48,21 @@ ELIF IF _6502SP_VERSION
  play1          = &120F
 
 ENDIF
+
+;----------------------------------------------------------------------------------------------------------
+; Common code headers
+;----------------------------------------------------------------------------------------------------------
+; Include common code headers here - these can declare ZP vars from the pool using SKIP...
+
+INCLUDE "lib/vgcplayer_config.h.asm"
+
+; Allocate vars in ZP
+.zp_start
+ORG musicWorkspace      \ MM - changed to match zero page free space in Elite
+GUARD &9E
+
+INCLUDE "lib/vgcplayer.h.asm"
+.zp_end
 
 ;-------------------------------------------
 ; swram bank
