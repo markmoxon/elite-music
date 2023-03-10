@@ -19,7 +19,7 @@ IF _DISC_VERSION
  DL             = &008B
  musicWorkspace = &0092
  musicStatus    = &009B
- musicOptions   = &03C4     \ NOSTM+1, which is unused in the disc version
+ musicOptions   = &03C4     \ COMC-1, which is unused in the disc version
  DNOIZ          = &03C6
  PlayMusic      = &11FE
  play1          = &120F
