@@ -16,7 +16,6 @@ _6502SP_VERSION         = (_VARIANT = 3)
 
 IF _DISC_VERSION
 
- DL             = &008B
  musicWorkspace = &0092
  musicStatus    = &009B
  musicOptions   = &03C4     \ COMC-1, which is unused in the disc version
@@ -30,7 +29,6 @@ IF _DISC_VERSION
 
 ELIF _MASTER_VERSION
 
- DL             = &005B
  musicWorkspace = &008C
  musicStatus    = &0095
  musicOptions   = &2C41     \ COMC+1, which is unused in the Master version
@@ -44,17 +42,16 @@ ELIF _MASTER_VERSION
 
 ELIF _6502SP_VERSION
 
- DL             = &008B
- musicWorkspace = &0092
- musicStatus    = &009B
- musicOptions   = &03C4
- DNOIZ          = &03C6
- PlayMusic      = &11FE
- play1          = &120F
+ musicWorkspace = &0070
+ musicStatus    = &0079
+ musicOptions   = &007A     \ musicStatus+1 is available
+ DNOIZ          = &3DC1     \ This is a copy of DNOIZ in the I/O Processor
+ PlayMusic      = &3D63
+ play1          = &3D74
 
- keyE           = &45
- keyM           = &4D
- keyQ           = &51
+ keyE           = &22
+ keyM           = &65
+ keyQ           = &10
 
 ENDIF
 
@@ -190,6 +187,8 @@ jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
                         \   * Bit 6 set = swap tunes 1 and 2
                         \           clear = default tunes (default)
 
+IF _DISC_VERSION OR _MASTER_VERSION
+
                         \ We start with the "Q" logic that we replaced with the
                         \ injected call to this routine
 
@@ -202,6 +201,8 @@ jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
  JSR StopCurrentTune    \ Stop the current tune
 
 .DK7
+
+ENDIF
 
                         \ The new "M" option switched music on and off
 
