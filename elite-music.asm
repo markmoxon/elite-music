@@ -45,9 +45,9 @@ ELIF _6502SP_VERSION
  musicWorkspace = &0070
  musicStatus    = &0079
  musicOptions   = &007A     \ musicStatus+1 is available
- DNOIZ          = &3DC1     \ This is a copy of DNOIZ in the I/O Processor
- PlayMusic      = &3D63
- play1          = &3D74
+ DNOIZ          = &3DC2     \ This is a copy of DNOIZ in the I/O Processor
+ PlayMusic      = &3D64
+ play1          = &3D75
 
  keyE           = &22
  keyM           = &65
