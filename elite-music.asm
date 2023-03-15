@@ -33,8 +33,8 @@ ELIF _MASTER_VERSION
  musicStatus    = &0095
  musicOptions   = &2C41     \ COMC+1, which is unused in the Master version
  DNOIZ          = &2C55
- PlayMusic      = &2D5F
- play1          = &2D70
+ PlayMusic      = &2D60
+ play1          = &2D71
 
  keyE           = &45
  keyM           = &4D
