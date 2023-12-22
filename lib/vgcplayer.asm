@@ -120,6 +120,9 @@ ENDIF
 
 IF _ENABLE_VOLUME
 
+; Volume code taken from:
+; https://github.com/kieranhj/pop-beeb/blob/master/lib/vgmplayer.asm
+
 .psg_volume_bit	EQUB 16		; bit 4
 .psg_latch_bit	EQUB 128	; bit 7
 
