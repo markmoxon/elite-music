@@ -29,10 +29,23 @@ IF _DISC_VERSION
 
 ELIF _MASTER_VERSION
 
+ CPU 1                  \ Switch to 65SC12 assembly, as this code runs on a
+                        \ BBC Master
+
  musicWorkspace = &008C
  musicStatus    = &0095
- musicOptions   = &2C41     \ COMC+1, which is unused in the Master version
+
+ psg_register   = &1220     \ XX24, which is unused in the Master version
+ vgm_volume     = &1223     \ XP
+ vgm_volume_mask = &1224    \ YP
+ volume_interp  = &1225     \ YS and BALI (2 bytes)
+ volume_increment = &1227   \ UPO
+ volume_store   = &1228     \ boxsize
+ volume_table   = &2C30     \ COMC-16
+
+ musicOptions   = &2C41     \ dials, which is unused in the Master version
  DNOIZ          = &2C55
+ VOL            = &2C61
  PlayMusic      = &2D60
  play1          = &2D71
 
@@ -54,6 +67,8 @@ ELIF _6502SP_VERSION
  keyQ           = &10
 
 ENDIF
+
+_ENABLE_VOLUME = _MASTER_VERSION
 
 ;----------------------------------------------------------------------------------------------------------
 ; Common code headers
@@ -95,6 +110,12 @@ jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
 
 .init_tune1
 {
+IF _ENABLE_VOLUME
+
+    JSR vgm_set_volume  \ MM - Initialise the volume table
+
+ENDIF
+
     BIT musicOptions    \ MM - If bit 6 of musicOptions is set then tunes are
     BVS init_tune2s     \ swapped, so initialise tune 2 instead
 
@@ -111,6 +132,12 @@ jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
 ; set carry to enable looping
 .init_tune2
 {
+IF _ENABLE_VOLUME
+
+    JSR vgm_set_volume  \ MM - Initialise the volume table
+
+ENDIF
+
     BIT musicOptions    \ MM - If bit 6 of musicOptions is set then tunes are
     BVS init_tune1s     \ swapped, so  initialise tune 1 instead
 
@@ -204,7 +231,7 @@ IF _DISC_VERSION OR _MASTER_VERSION
 
 ENDIF
 
-                        \ The new "M" option switched music on and off
+                        \ The new "M" option switches music on and off
 
  CPX #keyM              \ If "M" is not being pressed, skip to opts1
  BNE opts1
@@ -215,7 +242,7 @@ ENDIF
  EOR musicOptions
  STA musicOptions
 
- JMP opts4              \ Return from the subroutine with the C flag set, so
+ JMP opts4              \ Return from the subroutine with the C flag set, so we
                         \ can make a beep and delay for a bit
 
 .opts1
@@ -247,10 +274,17 @@ ENDIF
 
 .opts2
 
- JMP opts4              \ Return from the subroutine with the C flag set, so
+ JMP opts4              \ Return from the subroutine with the C flag set, so we
                         \ can make a beep and delay for a bit
 
 .opts3
+
+IF _ENABLE_VOLUME
+
+ JSR vgm_set_volume     \ Update the volume table in case volume or music
+                        \ settings have changed
+
+ENDIF
 
  LDA #6                 \ Modify the PlayMusic routine so it plays music on the
  STA play1+1            \ next call
@@ -260,10 +294,17 @@ ENDIF
 
 .opts4
 
+IF _ENABLE_VOLUME
+
+ JSR vgm_set_volume     \ Update the volume table in case volume or music
+                        \ settings have changed
+
+ENDIF
+
  LDA #6                 \ Modify the PlayMusic routine so it plays music on the
  STA play1+1            \ next call
 
- SEC                    \ Return from the subroutine with the C flag set, so
+ SEC                    \ Return from the subroutine with the C flag set, so we
  RTS                    \ can make a beep and delay for a bit
 
 }

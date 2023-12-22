@@ -118,7 +118,95 @@ ENDIF
     jmp sn_reset ; also returns non-zero in A
 }
 
+IF _ENABLE_VOLUME
 
+.psg_volume_bit	EQUB 16		; bit 4
+.psg_latch_bit	EQUB 128	; bit 7
+
+; set volume by setting the 16-byte volume_table ramp using a hacky linear interpolation
+; TODO: needs a bug fix as the full volume ramp is out by 1 level
+; Note that volumes below 7 will degrade music quality due to lack of precision
+.vgm_set_volume
+{
+    PHA                 \ Preserve registers
+    PHX
+    PHY
+
+    BIT musicOptions    \ If bit 7 of musicOptions is set then music is
+    BMI noMusic         \ disabled, so jump to noMusic to zero vgm_volume_mask
+
+    LDA #0              \ Music is enabled so set A = 0 to use as the value for
+                        \ vgm_volume_mask below
+
+    EQUB &2C            \ Skip the next instruction by turning it into
+                        \ &2C &A9 &00, or BIT &00A9, which does nothing apart
+                        \ from affect the flags
+
+.noMusic
+
+    LDA #%00001111      \ Music is disabled so set A = %00001111 to use as the
+                        \ value for vgm_volume_mask
+
+    STA vgm_volume_mask \ Set vgm_volume_mask to 0 (no music) or 15 (music)
+
+    LDA VOL             \ Grab volume 0-7 from VOL and scale to 0-15
+    ASL A
+    TAX
+    BEQ P%+3
+    INX
+
+;	stx volume_store
+	lda #15
+	sta volume_store
+;	sec
+;	sbc volume_store
+;	sta volume_store
+	; set volume table
+	lda #0
+	stz volume_interp+0
+	stz volume_interp+1
+	
+	cpx #0
+	beq done_loopx
+	inc volume_store
+.loopx
+	dec volume_store
+	clc
+	adc #17
+	dex
+	bne loopx
+.done_loopx
+	sta volume_increment
+
+	; x=0 on entry
+.loopx2
+	clc
+	lda volume_interp+1
+	adc volume_store
+	sta volume_table,x
+
+	lda volume_interp+0
+	clc
+	adc volume_increment
+	sta volume_interp+0
+	lda volume_interp+1
+	adc #0
+	sta volume_interp+1
+
+	; offset volume
+	inx
+	cpx #16
+	bne loopx2
+
+    PLA                 \ Restore registers
+    PLX
+    PLY
+
+	rts
+}
+
+
+ENDIF
 
 ;-------------------------------------------
 ; Sound chip routines
@@ -131,6 +219,35 @@ ENDIF
 ; clobbers X, A is non-zero on exit
 .sn_write
 {
+
+IF _ENABLE_VOLUME
+; Check if volume control needs applying
+; First check if bit 7 is set, 0=DATA 1=LATCH
+
+	bit psg_latch_bit 	; 
+	beq no_volume 		; [3]
+
+;	; this is a latch register write
+; and check bit 4 to see if it is a volume register write, 1=VOLUME, 0=PITCH
+	bit psg_volume_bit	; [4]
+	beq no_volume		; not a volume register write
+
+	tax				; [2]
+	and #&f0		; [2]
+	sta psg_register
+	txa				; [2]
+	and #&0f		; [2]
+
+	tax				; [2]
+	lda volume_table,x
+	and #&0f			
+	ora vgm_volume_mask		; all bits set to mask audio, or clear to leave as is
+	ora psg_register
+
+.no_volume
+
+ENDIF ; _ENABLE_VOLUME
+
     ldx #255
     stx &fe43
     sta &fe4f
