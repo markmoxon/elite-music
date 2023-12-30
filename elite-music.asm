@@ -32,8 +32,8 @@ ELIF _MASTER_VERSION
  CPU 1                  \ Switch to 65SC12 assembly, as this code runs on a
                         \ BBC Master
 
- musicWorkspace = &008C
- musicStatus    = &0095
+ musicWorkspace = &0086
+ musicStatus    = &008F
 
  psg_register   = &1220     \ XX24, which is unused in the Master version
  vgm_volume     = &1223     \ XP
