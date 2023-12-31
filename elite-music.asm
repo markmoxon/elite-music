@@ -18,9 +18,9 @@ IF _DISC_VERSION
 
  musicWorkspace = &0092
  musicStatus    = &009B
- musicOptions   = &03C4     \ COMC-1, which is unused in the disc version
+\musicOptions   = &03C4     \ COMC-1, which is unused in the disc version
  DNOIZ          = &03C6
- PlayMusic      = &11FE
+\PlayMusic      = &11FE
  play1          = &120F
 
  keyE           = &22
@@ -35,18 +35,18 @@ ELIF _MASTER_VERSION
  musicWorkspace = &0086
  musicStatus    = &008F
 
- psg_register   = &1220     \ XX24, which is unused in the Master version
- vgm_volume     = &1223     \ XP
- vgm_volume_mask = &1224    \ YP
- volume_interp  = &1225     \ YS and BALI (2 bytes)
- volume_increment = &1227   \ UPO
- volume_store   = &1228     \ boxsize
- volume_table   = &2C30     \ COMC-16
+\psg_register   = &1220     \ XX24, which is unused in the Master version
+\vgm_volume     = &1223     \ XP
+\vgm_volume_mask = &1224    \ YP
+\volume_interp  = &1225     \ YS and BALI (2 bytes)
+\volume_increment = &1227   \ UPO
+\volume_store   = &1228     \ boxsize
+\volume_table   = &2C30     \ COMC-16
 
- musicOptions   = &2C41     \ dials, which is unused in the Master version
+\musicOptions   = &2C41     \ dials, which is unused in the Master version
  DNOIZ          = &2C55
  VOL            = &2C61
- PlayMusic      = &2D60
+\PlayMusic      = &2D60
  play1          = &2D71
 
  keyE           = &45
@@ -57,9 +57,9 @@ ELIF _6502SP_VERSION
 
  musicWorkspace = &0070
  musicStatus    = &0079
- musicOptions   = &007A     \ musicStatus+1 is available
+\musicOptions   = &007A     \ musicStatus+1 is available
  DNOIZ          = &3DC2     \ This is a copy of DNOIZ in the I/O Processor
- PlayMusic      = &3D64
+\PlayMusic      = &3D64
  play1          = &3D75
 
  keyE           = &22

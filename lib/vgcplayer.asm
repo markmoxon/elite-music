@@ -123,8 +123,32 @@ IF _ENABLE_VOLUME
 ; Volume code taken from:
 ; https://github.com/kieranhj/pop-beeb/blob/master/lib/vgmplayer.asm
 
+.psg_register	EQUB 0		; cant be in ZP as used in IRQ
 .psg_volume_bit	EQUB 16		; bit 4
 .psg_latch_bit	EQUB 128	; bit 7
+
+; volume ramp table - set by audio_set_volume - note that on SN chip 15=off, 0=full
+.volume_table	    EQUB 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15		;
+.volume_interp      EQUW 0
+.volume_increment   EQUB 0
+.volume_store       EQUB 0
+
+; 0 = 16* 0 =   0 &00
+; 1 = 16* 1 =  16 &10
+; 2 = 16* 2 =  32 &20
+; 8 = 16* 8 =     &80 
+;...
+;15 = 16*15 = 240 &F0
+
+; at full volume, it's 0 to 15 (0-15)
+; at half volume it's 8 to 15 (0-8)
+; at silence it's 15 to 15 (0-0)
+
+;
+.vgm_volume			EQUB 15 ; volume is 0-15 where 0 is silence, 15 is full
+.vgm_volume_mask	EQUB 0	; set to 0 for no volume adjust, 15 for full audio mask
+
+.musicOptions       EQUB 0
 
 ; set volume by setting the 16-byte volume_table ramp using a hacky linear interpolation
 ; TODO: needs a bug fix as the full volume ramp is out by 1 level
