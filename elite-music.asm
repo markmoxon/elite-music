@@ -399,16 +399,4 @@ PRINT "          alignment lost",(P%-H%),"bytes"
 
 PRINT "           total size is",(end-start),"bytes"
 
-IF _DISC_VERSION
-
- SAVE "elite-music-disc.rom", start, end, start
-
-ELIF _MASTER_VERSION
-
- SAVE "elite-music-master.rom", start, end, start
-
-ELIF _6502SP_VERSION
-
- SAVE "elite-music-6502sp.rom", start, end, start
-
-ENDIF
+SAVE "elite-music.rom", start, end, start
