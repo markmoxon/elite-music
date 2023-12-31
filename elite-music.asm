@@ -19,18 +19,15 @@ IF _DISC_VERSION
  musicWorkspace = &0092
  musicStatus    = &009B
 \musicOptions   = &03C4     \ COMC-1, which is unused in the disc version
- DNOIZ          = &03C6
+\DNOIZ          = &03C6
 \PlayMusic      = &11FE
- play1          = &120F
+\play1          = &120F
 
- keyE           = &22
- keyM           = &65
- keyQ           = &10
+\keyE           = &22
+\keyM           = &65
+\keyQ           = &10
 
 ELIF _MASTER_VERSION
-
- CPU 1                  \ Switch to 65SC12 assembly, as this code runs on a
-                        \ BBC Master
 
  musicWorkspace = &0086
  musicStatus    = &008F
@@ -62,9 +59,9 @@ ELIF _6502SP_VERSION
 \PlayMusic      = &3D64
  play1          = &3D75
 
- keyE           = &22
- keyM           = &65
- keyQ           = &10
+\keyE           = &22
+\keyM           = &65
+\keyQ           = &10
 
 ENDIF
 
@@ -106,16 +103,15 @@ jmp PlayCurrentTune ; &8006 \ MM - added check to skip playing if sound is disab
 jmp StopCurrentTune ; &8009 \ MM - moved into sideways RAM to save a few bytes
 jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
 
-.addrDNOIZ      EQUW &2C55
-.addrplay1      EQUW &2D71+1    \ Store play1+1 here
+; This table runs from &800F for 9 bytes
+
+.addrDNOIZ      EQUW &03C6
+.addrplay1      EQUW &120F+1    \ Store play1+1 here
 .addrVOL        EQUW &2C61
 
-.keyE           EQUB &45        \ "E" = &22 BBC Micro, &45 Master
-.keyM           EQUB &4D        \ "M" = &65 BBC Micro, &4D Master
-.keyQ           EQUB &51        \ "Q" = &10 BBC Micro, &51 Master
-
-.keyVolUp       EQUB &00
-.keyVolDown     EQUB &00
+.keyE           EQUB &22        \ "E" = &22 BBC Micro, &45 Master
+.keyM           EQUB &65        \ "M" = &65 BBC Micro, &4D Master
+.keyQ           EQUB &10        \ "Q" = &10 BBC Micro, &51 Master
 
 ; code routines
 

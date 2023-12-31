@@ -199,8 +199,8 @@ IF _ENABLE_VOLUME
 ;	sta volume_store
 	; set volume table
 	lda #0
-	stz volume_interp+0
-	stz volume_interp+1
+	sta volume_interp+0
+	sta volume_interp+1
 	
 	cpx #0
 	beq done_loopx
