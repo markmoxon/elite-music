@@ -185,15 +185,15 @@ ENDIF
                         \ whether sound is enabled before playing anything
 
  LDA DNOIZ              \ If DNOIZ is non-zero, then sound is disabled, so
- BNE play1              \ return from the subroutine
+ BNE tune1              \ return from the subroutine
 
  BIT musicOptions       \ If bit 7 of musicOptions is set then music is
- BMI play1              \ disabled, so return from the subroutine
+ BMI tune1              \ disabled, so return from the subroutine
 
  JMP vgm_update         \ Otherwise sound is enabled, so jump to vgm_update to
                         \ play the music
 
-.play1
+.tune1
 
  RTS                    \ Sound is disabled, so return from the subroutine
 
