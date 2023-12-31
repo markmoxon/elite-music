@@ -4,602 +4,633 @@
 .zp_end
 .start
 .jumptable
-     8000   4C 18 80   JMP &8018
-     8003   4C 2A 80   JMP &802A
-     8006   4C 62 80   JMP &8062
-     8009   4C 3C 80   JMP &803C
-     800C   4C 7C 80   JMP &807C
+     8000   4C 1B 80   JMP &801B
+     8003   4C 2D 80   JMP &802D
+     8006   4C 65 80   JMP &8065
+     8009   4C 3F 80   JMP &803F
+     800C   4C 7F 80   JMP &807F
 .addrDNOIZ
      800F   C6 03
 .addrplay1
      8011   10 12
 .addrVOL
-     8013   61 2C
+     8013   1A 80
 .keyE
      8015   22
 .keyM
      8016   65
 .keyQ
      8017   10
+.keyVolDown
+     8018   66
+.keyVolUp
+     8019   67
+.localVOL
+     801A   07
 .init_tune1
-     8018   20 80 81   JSR &8180
-     801B   2C 7F 81   BIT &817F
-     801E   70 12      BVS &8032
+     801B   20 A8 81   JSR &81A8
+     801E   2C 8E 81   BIT &818E
+     8021   70 12      BVS &8035
 .init_tune1s
-     8020   A9 AD      LDA #&AD
-     8022   A2 7C      LDX #&7C
-     8024   A0 84      LDY #&84
-     8026   38         SEC
-     8027   4C 01 81   JMP &8101
+     8023   A9 AE      LDA #&AE
+     8025   A2 A4      LDX #&A4
+     8027   A0 84      LDY #&84
+     8029   38         SEC
+     802A   4C 29 81   JMP &8129
 .init_tune2
-     802A   20 80 81   JSR &8180
-     802D   2C 7F 81   BIT &817F
-     8030   70 EE      BVS &8020
+     802D   20 A8 81   JSR &81A8
+     8030   2C 8E 81   BIT &818E
+     8033   70 EE      BVS &8023
 .init_tune2s
-     8032   A9 AD      LDA #&AD
-     8034   A2 0E      LDX #&0E
-     8036   A0 94      LDY #&94
-     8038   38         SEC
-     8039   4C 01 81   JMP &8101
+     8035   A9 AE      LDA #&AE
+     8037   A2 36      LDX #&36
+     8039   A0 94      LDY #&94
+     803B   38         SEC
+     803C   4C 29 81   JMP &8129
 .StopCurrentTune
-     803C   A9 00      LDA #&00
-     803E   85 8F      STA &8F
-     8040   A0 08      LDY #&08
-     8042   8C 86 82   STY &8286
-     8045   20 21 82   JSR &8221
-     8048   A9 E6      LDA #&E6
-     804A   20 ED 81   JSR &81ED
-     804D   20 2A 80   JSR &802A
-     8050   AD 11 80   LDA &8011
-     8053   8D 5F 80   STA &805F
-     8056   AD 12 80   LDA &8012
-     8059   8D 60 80   STA &8060
-.modify
-     805C   A9 06      LDA #&06
-     805E   8D FF FF   STA &FFFF
-     8061   60         RTS
+     803F   A9 00      LDA #&00
+     8041   85 8F      STA &8F
+     8043   A0 08      LDY #&08
+     8045   8C AE 82   STY &82AE
+     8048   20 49 82   JSR &8249
+     804B   A9 E6      LDA #&E6
+     804D   20 15 82   JSR &8215
+     8050   20 2D 80   JSR &802D
+     8053   AD 11 80   LDA &8011
+     8056   8D 62 80   STA &8062
+     8059   AD 12 80   LDA &8012
+     805C   8D 63 80   STA &8063
+.modifyPlay
+     805F   A9 06      LDA #&06
+     8061   8D FF FF   STA &FFFF
+     8064   60         RTS
 .PlayCurrentTune
-     8062   AD 0F 80   LDA &800F
-     8065   8D 6F 80   STA &806F
-     8068   AD 10 80   LDA &8010
-     806B   8D 70 80   STA &8070
-.modify
-     806E   AD FF FF   LDA &FFFF
-     8071   D0 08      BNE &807B
-     8073   2C 7F 81   BIT &817F
-     8076   30 03      BMI &807B
-     8078   4C 13 81   JMP &8113
+     8065   AD 0F 80   LDA &800F
+     8068   8D 72 80   STA &8072
+     806B   AD 10 80   LDA &8010
+     806E   8D 73 80   STA &8073
+.modifyDNOIZ
+     8071   AD FF FF   LDA &FFFF
+     8074   D0 08      BNE &807E
+     8076   2C 8E 81   BIT &818E
+     8079   30 03      BMI &807E
+     807B   4C 3B 81   JMP &813B
 .tune1
-     807B   60         RTS
+     807E   60         RTS
 .ProcessOptions
-     807C   EC 17 80   CPX &8017
-     807F   D0 12      BNE &8093
-     8081   AD 0F 80   LDA &800F
-     8084   8D 8E 80   STA &808E
-     8087   AD 10 80   LDA &8010
-     808A   8D 8F 80   STA &808F
-.modify1
-     808D   8E FF FF   STX &FFFF
-     8090   20 3C 80   JSR &803C
+     807F   AD 0F 80   LDA &800F
+     8082   8D BB 80   STA &80BB
+     8085   AD 10 80   LDA &8010
+     8088   8D BC 80   STA &80BC
+     808B   AD 13 80   LDA &8013
+     808E   8D C1 80   STA &80C1
+     8091   8D D6 80   STA &80D6
+     8094   AD 14 80   LDA &8014
+     8097   8D C2 80   STA &80C2
+     809A   8D D7 80   STA &80D7
+     809D   AD 11 80   LDA &8011
+     80A0   8D 0B 81   STA &810B
+     80A3   8D 18 81   STA &8118
+     80A6   8D 23 81   STA &8123
+     80A9   AD 12 80   LDA &8012
+     80AC   8D 0C 81   STA &810C
+     80AF   8D 19 81   STA &8119
+     80B2   8D 24 81   STA &8124
+     80B5   EC 17 80   CPX &8017
+     80B8   D0 06      BNE &80C0
+.modifyDNOIZ1
+     80BA   8E FF FF   STX &FFFF
+     80BD   20 3F 80   JSR &803F
 .DK7
-     8093   EC 16 80   CPX &8016
-     8096   D0 0E      BNE &80A6
-     8098   20 3C 80   JSR &803C
-     809B   A9 80      LDA #&80
-     809D   4D 7F 81   EOR &817F
-     80A0   8D 7F 81   STA &817F
-     80A3   4C EB 80   JMP &80EB
+.modifyVol1
+     80C0   AC FF FF   LDY &FFFF
+     80C3   EC 19 80   CPX &8019
+     80C6   F0 07      BEQ &80CF
+     80C8   EC 18 80   CPX &8018
+     80CB   D0 0F      BNE &80DC
+     80CD   88         DEY
+     80CE   24
+.DOVOL1
+     80CF   C8         INY
+     80D0   98         TYA
+     80D1   29 F8      AND #&F8
+     80D3   D0 03      BNE &80D8
+.modifyVol2
+     80D5   8C FF FF   STY &FFFF
+.DOVOL3
+     80D8   2C 28 81   BIT &8128
+     80DB   60         RTS
+.DOVOL4
+     80DC   EC 16 80   CPX &8016
+     80DF   D0 0E      BNE &80EF
+     80E1   20 3F 80   JSR &803F
+     80E4   A9 80      LDA #&80
+     80E6   4D 8E 81   EOR &818E
+     80E9   8D 8E 81   STA &818E
+     80EC   4C 1D 81   JMP &811D
 .opts1
-     80A6   EC 15 80   CPX &8015
-     80A9   D0 2A      BNE &80D5
-     80AB   A5 8F      LDA &8F
-     80AD   48         PHA
-     80AE   20 3C 80   JSR &803C
-     80B1   A9 40      LDA #&40
-     80B3   4D 7F 81   EOR &817F
-     80B6   8D 7F 81   STA &817F
-     80B9   20 2A 80   JSR &802A
-     80BC   68         PLA
-     80BD   F0 13      BEQ &80D2
-     80BF   AD 11 80   LDA &8011
-     80C2   8D CE 80   STA &80CE
-     80C5   AD 12 80   LDA &8012
-     80C8   8D CF 80   STA &80CF
-.modify2
-     80CB   A9 06      LDA #&06
-     80CD   8D FF FF   STA &FFFF
-     80D0   85 8F      STA &8F
+     80EF   EC 15 80   CPX &8015
+     80F2   D0 1E      BNE &8112
+     80F4   A5 8F      LDA &8F
+     80F6   48         PHA
+     80F7   20 3F 80   JSR &803F
+     80FA   A9 40      LDA #&40
+     80FC   4D 8E 81   EOR &818E
+     80FF   8D 8E 81   STA &818E
+     8102   20 2D 80   JSR &802D
+     8105   68         PLA
+     8106   F0 07      BEQ &810F
+.modifyPlay1
+     8108   A9 06      LDA #&06
+     810A   8D FF FF   STA &FFFF
+     810D   85 8F      STA &8F
 .opts2
-     80D2   4C EB 80   JMP &80EB
+     810F   4C 1D 81   JMP &811D
 .opts3
-     80D5   20 80 81   JSR &8180
-     80D8   AD 11 80   LDA &8011
-     80DB   8D E7 80   STA &80E7
-     80DE   AD 12 80   LDA &8012
-     80E1   8D E8 80   STA &80E8
-.modify3
-     80E4   A9 06      LDA #&06
-     80E6   8D FF FF   STA &FFFF
-     80E9   18         CLC
-     80EA   60         RTS
+     8112   20 A8 81   JSR &81A8
+.modifyPlay2
+     8115   A9 06      LDA #&06
+     8117   8D FF FF   STA &FFFF
+     811A   18         CLC
+     811B   B8         CLV
+     811C   60         RTS
 .opts4
-     80EB   20 80 81   JSR &8180
-     80EE   AD 11 80   LDA &8011
-     80F1   8D FD 80   STA &80FD
-     80F4   AD 12 80   LDA &8012
-     80F7   8D FE 80   STA &80FE
-.modify4
-     80FA   A9 06      LDA #&06
-     80FC   8D FF FF   STA &FFFF
-     80FF   38         SEC
-     8100   60         RTS
+     811D   20 A8 81   JSR &81A8
+.modifyPlay3
+     8120   A9 06      LDA #&06
+     8122   8D FF FF   STA &FFFF
+     8125   38         SEC
+     8126   B8         CLV
+     8127   60         RTS
+.setVFlag
+     8128   40
 .vgm_start
 .vgm_init
-     8101   8D 85 82   STA &8285
-     8104   A9 00      LDA #&00
-     8106   6A         ROR A
-     8107   8D 89 82   STA &8289
-     810A   8E 8A 82   STX &828A
-     810D   8C 8B 82   STY &828B
-     8110   4C BA 82   JMP &82BA
+     8129   8D AD 82   STA &82AD
+     812C   A9 00      LDA #&00
+     812E   6A         ROR A
+     812F   8D B1 82   STA &82B1
+     8132   8E B2 82   STX &82B2
+     8135   8C B3 82   STY &82B3
+     8138   4C E2 82   JMP &82E2
 .vgm_update
-     8113   AD 86 82   LDA &8286
-     8116   D0 2F      BNE &8147
-     8118   A9 03      LDA #&03
-     811A   20 79 83   JSR &8379
-     811D   90 04      BCC &8123
-     811F   C0 08      CPY #&08
-     8121   F0 25      BEQ &8148
+     813B   AD AE 82   LDA &82AE
+     813E   D0 2F      BNE &816F
+     8140   A9 03      LDA #&03
+     8142   20 A1 83   JSR &83A1
+     8145   90 04      BCC &814B
+     8147   C0 08      CPY #&08
+     8149   F0 25      BEQ &8170
 .more_updates
-     8123   A9 07      LDA #&07
-     8125   20 79 83   JSR &8379
-     8128   A9 01      LDA #&01
-     812A   20 A6 83   JSR &83A6
-     812D   A9 02      LDA #&02
-     812F   20 A6 83   JSR &83A6
-     8132   A9 04      LDA #&04
-     8134   20 79 83   JSR &8379
-     8137   A9 05      LDA #&05
-     8139   20 79 83   JSR &8379
-     813C   A9 06      LDA #&06
-     813E   20 79 83   JSR &8379
-     8141   A9 00      LDA #&00
-     8143   20 A6 83   JSR &83A6
-     8146   8A         TXA
+     814B   A9 07      LDA #&07
+     814D   20 A1 83   JSR &83A1
+     8150   A9 01      LDA #&01
+     8152   20 CE 83   JSR &83CE
+     8155   A9 02      LDA #&02
+     8157   20 CE 83   JSR &83CE
+     815A   A9 04      LDA #&04
+     815C   20 A1 83   JSR &83A1
+     815F   A9 05      LDA #&05
+     8161   20 A1 83   JSR &83A1
+     8164   A9 06      LDA #&06
+     8166   20 A1 83   JSR &83A1
+     8169   A9 00      LDA #&00
+     816B   20 CE 83   JSR &83CE
+     816E   8A         TXA
 .exit
-     8147   60         RTS
+     816F   60         RTS
 .finished
-     8148   AD 89 82   LDA &8289
-     814B   F0 13      BEQ &8160
-     814D   AE 8A 82   LDX &828A
-     8150   AC 8B 82   LDY &828B
-     8153   AD 89 82   LDA &8289
-     8156   0A         ASL A
-     8157   AD 85 82   LDA &8285
-     815A   20 01 81   JSR &8101
-     815D   4C 13 81   JMP &8113
+     8170   AD B1 82   LDA &82B1
+     8173   F0 13      BEQ &8188
+     8175   AE B2 82   LDX &82B2
+     8178   AC B3 82   LDY &82B3
+     817B   AD B1 82   LDA &82B1
+     817E   0A         ASL A
+     817F   AD AD 82   LDA &82AD
+     8182   20 29 81   JSR &8129
+     8185   4C 3B 81   JMP &813B
 .no_looping
-     8160   8C 86 82   STY &8286
-     8163   4C 21 82   JMP &8221
-.psg_register
-     8166   00
-.psg_volume_bit
-     8167   10
-.psg_latch_bit
-     8168   80
-.volume_table
-     8169   00
-     816A   01
-     816B   02
-     816C   03
-     816D   04
-     816E   05
-     816F   06
-     8170   07
-     8171   08
-     8172   09
-     8173   0A
-     8174   0B
-     8175   0C
-     8176   0D
-     8177   0E
-     8178   0F
-.volume_interp
-     8179   00 00
-.volume_increment
-     817B   00
-.volume_store
-     817C   00
-.vgm_volume
-     817D   0F
-.vgm_volume_mask
-     817E   00
+     8188   8C AE 82   STY &82AE
+     818B   4C 49 82   JMP &8249
 .musicOptions
-     817F   00
+     818E   00
+.psg_register
+     818F   00
+.psg_volume_bit
+     8190   10
+.psg_latch_bit
+     8191   80
+.volume_table
+     8192   00
+     8193   01
+     8194   02
+     8195   03
+     8196   04
+     8197   05
+     8198   06
+     8199   07
+     819A   08
+     819B   09
+     819C   0A
+     819D   0B
+     819E   0C
+     819F   0D
+     81A0   0E
+     81A1   0F
+.volume_interp
+     81A2   00 00
+.volume_increment
+     81A4   00
+.volume_store
+     81A5   00
+.vgm_volume
+     81A6   0F
+.vgm_volume_mask
+     81A7   00
 .vgm_set_volume
-     8180   48         PHA
-     8181   8A         TXA
-     8182   48         PHA
-     8183   98         TYA
-     8184   48         PHA
-     8185   2C 7F 81   BIT &817F
-     8188   30 03      BMI &818D
-     818A   A9 00      LDA #&00
-     818C   2C
+     81A8   48         PHA
+     81A9   8A         TXA
+     81AA   48         PHA
+     81AB   98         TYA
+     81AC   48         PHA
+     81AD   2C 8E 81   BIT &818E
+     81B0   30 03      BMI &81B5
+     81B2   A9 00      LDA #&00
+     81B4   2C
 .noMusic
-     818D   A9 0F      LDA #&0F
-     818F   8D 7E 81   STA &817E
-     8192   AD 13 80   LDA &8013
-     8195   8D 9F 81   STA &819F
-     8198   AD 14 80   LDA &8014
-     819B   8D A0 81   STA &81A0
+     81B5   A9 0F      LDA #&0F
+     81B7   8D A7 81   STA &81A7
+     81BA   AD 13 80   LDA &8013
+     81BD   8D C7 81   STA &81C7
+     81C0   AD 14 80   LDA &8014
+     81C3   8D C8 81   STA &81C8
 .modify
-     819E   AD FF FF   LDA &FFFF
-     81A1   0A         ASL A
-     81A2   AA         TAX
-     81A3   F0 01      BEQ &81A6
-     81A5   E8         INX
-     81A6   A9 0F      LDA #&0F
-     81A8   8D 7C 81   STA &817C
-     81AB   A9 00      LDA #&00
-     81AD   8D 79 81   STA &8179
-     81B0   8D 7A 81   STA &817A
-     81B3   E0 00      CPX #&00
-     81B5   F0 0C      BEQ &81C3
-     81B7   EE 7C 81   INC &817C
+     81C6   AD FF FF   LDA &FFFF
+     81C9   0A         ASL A
+     81CA   AA         TAX
+     81CB   F0 01      BEQ &81CE
+     81CD   E8         INX
+     81CE   A9 0F      LDA #&0F
+     81D0   8D A5 81   STA &81A5
+     81D3   A9 00      LDA #&00
+     81D5   8D A2 81   STA &81A2
+     81D8   8D A3 81   STA &81A3
+     81DB   E0 00      CPX #&00
+     81DD   F0 0C      BEQ &81EB
+     81DF   EE A5 81   INC &81A5
 .loopx
-     81BA   CE 7C 81   DEC &817C
-     81BD   18         CLC
-     81BE   69 11      ADC #&11
-     81C0   CA         DEX
-     81C1   D0 F7      BNE &81BA
+     81E2   CE A5 81   DEC &81A5
+     81E5   18         CLC
+     81E6   69 11      ADC #&11
+     81E8   CA         DEX
+     81E9   D0 F7      BNE &81E2
 .done_loopx
-     81C3   8D 7B 81   STA &817B
+     81EB   8D A4 81   STA &81A4
 .loopx2
-     81C6   18         CLC
-     81C7   AD 7A 81   LDA &817A
-     81CA   6D 7C 81   ADC &817C
-     81CD   9D 69 81   STA &8169,X
-     81D0   AD 79 81   LDA &8179
-     81D3   18         CLC
-     81D4   6D 7B 81   ADC &817B
-     81D7   8D 79 81   STA &8179
-     81DA   AD 7A 81   LDA &817A
-     81DD   69 00      ADC #&00
-     81DF   8D 7A 81   STA &817A
-     81E2   E8         INX
-     81E3   E0 10      CPX #&10
-     81E5   D0 DF      BNE &81C6
-     81E7   68         PLA
-     81E8   A8         TAY
-     81E9   68         PLA
-     81EA   AA         TAX
-     81EB   68         PLA
-     81EC   60         RTS
+     81EE   18         CLC
+     81EF   AD A3 81   LDA &81A3
+     81F2   6D A5 81   ADC &81A5
+     81F5   9D 92 81   STA &8192,X
+     81F8   AD A2 81   LDA &81A2
+     81FB   18         CLC
+     81FC   6D A4 81   ADC &81A4
+     81FF   8D A2 81   STA &81A2
+     8202   AD A3 81   LDA &81A3
+     8205   69 00      ADC #&00
+     8207   8D A3 81   STA &81A3
+     820A   E8         INX
+     820B   E0 10      CPX #&10
+     820D   D0 DF      BNE &81EE
+     820F   68         PLA
+     8210   A8         TAY
+     8211   68         PLA
+     8212   AA         TAX
+     8213   68         PLA
+     8214   60         RTS
 .sn_write
-     81ED   2C 68 81   BIT &8168
-     81F0   F0 1A      BEQ &820C
-     81F2   2C 67 81   BIT &8167
-     81F5   F0 15      BEQ &820C
-     81F7   AA         TAX
-     81F8   29 F0      AND #&F0
-     81FA   8D 66 81   STA &8166
-     81FD   8A         TXA
-     81FE   29 0F      AND #&0F
-     8200   AA         TAX
-     8201   BD 69 81   LDA &8169,X
-     8204   29 0F      AND #&0F
-     8206   0D 7E 81   ORA &817E
-     8209   0D 66 81   ORA &8166
+     8215   2C 91 81   BIT &8191
+     8218   F0 1A      BEQ &8234
+     821A   2C 90 81   BIT &8190
+     821D   F0 15      BEQ &8234
+     821F   AA         TAX
+     8220   29 F0      AND #&F0
+     8222   8D 8F 81   STA &818F
+     8225   8A         TXA
+     8226   29 0F      AND #&0F
+     8228   AA         TAX
+     8229   BD 92 81   LDA &8192,X
+     822C   29 0F      AND #&0F
+     822E   0D A7 81   ORA &81A7
+     8231   0D 8F 81   ORA &818F
 .no_volume
-     820C   A2 FF      LDX #&FF
-     820E   8E 43 FE   STX &FE43
-     8211   8D 4F FE   STA &FE4F
-     8214   E8         INX
-     8215   8E 40 FE   STX &FE40
-     8218   AD 40 FE   LDA &FE40
-     821B   09 08      ORA #&08
-     821D   8D 40 FE   STA &FE40
-     8220   60         RTS
+     8234   A2 FF      LDX #&FF
+     8236   8E 43 FE   STX &FE43
+     8239   8D 4F FE   STA &FE4F
+     823C   E8         INX
+     823D   8E 40 FE   STX &FE40
+     8240   AD 40 FE   LDA &FE40
+     8243   09 08      ORA #&08
+     8245   8D 40 FE   STA &FE40
+     8248   60         RTS
 .sn_reset
-     8221   A9 9F      LDA #&9F
-     8223   20 ED 81   JSR &81ED
-     8226   A9 BF      LDA #&BF
-     8228   20 ED 81   JSR &81ED
-     822B   A9 DF      LDA #&DF
-     822D   20 ED 81   JSR &81ED
-     8230   A9 FF      LDA #&FF
-     8232   4C ED 81   JMP &81ED
+     8249   A9 9F      LDA #&9F
+     824B   20 15 82   JSR &8215
+     824E   A9 BF      LDA #&BF
+     8250   20 15 82   JSR &8215
+     8253   A9 DF      LDA #&DF
+     8255   20 15 82   JSR &8215
+     8258   A9 FF      LDA #&FF
+     825A   4C 15 82   JMP &8215
 .vgm_streams
-     8235
+     825D
 .vgm_buffers
-     8285   00
+     82AD   00
 .vgm_finished
-     8286   00
+     82AE   00
 .vgm_flags
-     8287   00
+     82AF   00
 .vgm_temp
-     8288   00
+     82B0   00
 .vgm_loop
-     8289   00
+     82B1   00
 .vgm_source
-     828A   00 00
+     82B2   00 00
 .vgm_register_counts
-     828C
+     82B4
 .vgm_register_headers
-     8294   80
-     8295   A0
-     8296   C0
-     8297   E0
-     8298   90
-     8299   B0
-     829A   D0
-     829B   F0
+     82BC   80
+     82BD   A0
+     82BE   C0
+     82BF   E0
+     82C0   90
+     82C1   B0
+     82C2   D0
+     82C3   F0
 .vgm_next_block
-     829C   A0 00      LDY #&00
-     829E   B1 86      LDA (&86),Y
-     82A0   18         CLC
-     82A1   69 04      ADC #&04
-     82A3   85 8C      STA &8C
-     82A5   C8         INY
-     82A6   B1 86      LDA (&86),Y
-     82A8   69 00      ADC #&00
-     82AA   85 8D      STA &8D
-     82AC   A5 86      LDA &86
-     82AE   18         CLC
-     82AF   65 8C      ADC &8C
-     82B1   85 86      STA &86
-     82B3   A5 87      LDA &87
-     82B5   65 8D      ADC &8D
-     82B7   85 87      STA &87
-     82B9   60         RTS
+     82C4   A0 00      LDY #&00
+     82C6   B1 86      LDA (&86),Y
+     82C8   18         CLC
+     82C9   69 04      ADC #&04
+     82CB   85 8C      STA &8C
+     82CD   C8         INY
+     82CE   B1 86      LDA (&86),Y
+     82D0   69 00      ADC #&00
+     82D2   85 8D      STA &8D
+     82D4   A5 86      LDA &86
+     82D6   18         CLC
+     82D7   65 8C      ADC &8C
+     82D9   85 86      STA &86
+     82DB   A5 87      LDA &87
+     82DD   65 8D      ADC &8D
+     82DF   85 87      STA &87
+     82E1   60         RTS
 .vgm_stream_mount
-     82BA   86 86      STX &86
-     82BC   84 87      STY &87
-     82BE   A0 03      LDY #&03
-     82C0   B1 86      LDA (&86),Y
-     82C2   8D 87 82   STA &8287
-     82C5   A5 86      LDA &86
-     82C7   18         CLC
-     82C8   69 07      ADC #&07
-     82CA   85 86      STA &86
-     82CC   90 02      BCC &82D0
-     82CE   E6 87      INC &87
+     82E2   86 86      STX &86
+     82E4   84 87      STY &87
+     82E6   A0 03      LDY #&03
+     82E8   B1 86      LDA (&86),Y
+     82EA   8D AF 82   STA &82AF
+     82ED   A5 86      LDA &86
+     82EF   18         CLC
+     82F0   69 07      ADC #&07
+     82F2   85 86      STA &86
+     82F4   90 02      BCC &82F8
+     82F6   E6 87      INC &87
 .no_block_hi
-     82D0   A2 00      LDX #&00
-     82D2   8E 86 82   STX &8286
+     82F8   A2 00      LDX #&00
+     82FA   8E AE 82   STX &82AE
 .block_loop
-     82D5   A5 86      LDA &86
-     82D7   18         CLC
-     82D8   69 04      ADC #&04
-     82DA   9D 35 82   STA &8235,X
-     82DD   A5 87      LDA &87
-     82DF   69 00      ADC #&00
-     82E1   9D 3D 82   STA &823D,X
-     82E4   A9 00      LDA #&00
-     82E6   9D 45 82   STA &8245,X
-     82E9   9D 4D 82   STA &824D,X
-     82EC   9D 55 82   STA &8255,X
-     82EF   9D 5D 82   STA &825D,X
-     82F2   9D 65 82   STA &8265,X
-     82F5   9D 6D 82   STA &826D,X
-     82F8   9D 75 82   STA &8275,X
-     82FB   9D 7D 82   STA &827D,X
-     82FE   A9 01      LDA #&01
-     8300   9D 8C 82   STA &828C,X
-     8303   20 9C 82   JSR &829C
-     8306   E8         INX
-     8307   E0 08      CPX #&08
-     8309   D0 CA      BNE &82D5
-     830B   60         RTS
+     82FD   A5 86      LDA &86
+     82FF   18         CLC
+     8300   69 04      ADC #&04
+     8302   9D 5D 82   STA &825D,X
+     8305   A5 87      LDA &87
+     8307   69 00      ADC #&00
+     8309   9D 65 82   STA &8265,X
+     830C   A9 00      LDA #&00
+     830E   9D 6D 82   STA &826D,X
+     8311   9D 75 82   STA &8275,X
+     8314   9D 7D 82   STA &827D,X
+     8317   9D 85 82   STA &8285,X
+     831A   9D 8D 82   STA &828D,X
+     831D   9D 95 82   STA &8295,X
+     8320   9D 9D 82   STA &829D,X
+     8323   9D A5 82   STA &82A5,X
+     8326   A9 01      LDA #&01
+     8328   9D B4 82   STA &82B4,X
+     832B   20 C4 82   JSR &82C4
+     832E   E8         INX
+     832F   E0 08      CPX #&08
+     8331   D0 CA      BNE &82FD
+     8333   60         RTS
 .vgm_get_register_data
-     830C   AA         TAX
-     830D   18         CLC
-     830E   6D 85 82   ADC &8285
-     8311   8D B4 83   STA &83B4
-     8314   8D BB 83   STA &83BB
-     8317   8E 4B 83   STX &834B
-     831A   BD 35 82   LDA &8235,X
-     831D   85 86      STA &86
-     831F   BD 3D 82   LDA &823D,X
-     8322   85 87      STA &87
-     8324   BD 45 82   LDA &8245,X
-     8327   85 88      STA &88
-     8329   BD 4D 82   LDA &824D,X
-     832C   85 89      STA &89
-     832E   BD 55 82   LDA &8255,X
-     8331   85 8A      STA &8A
-     8333   BD 5D 82   LDA &825D,X
-     8336   85 8B      STA &8B
-     8338   BD 65 82   LDA &8265,X
-     833B   8D B3 83   STA &83B3
-     833E   BD 6D 82   LDA &826D,X
-     8341   8D BA 83   STA &83BA
-     8344   20 E1 83   JSR &83E1
-     8347   8D 77 83   STA &8377
+     8334   AA         TAX
+     8335   18         CLC
+     8336   6D AD 82   ADC &82AD
+     8339   8D DC 83   STA &83DC
+     833C   8D E3 83   STA &83E3
+     833F   8E 73 83   STX &8373
+     8342   BD 5D 82   LDA &825D,X
+     8345   85 86      STA &86
+     8347   BD 65 82   LDA &8265,X
+     834A   85 87      STA &87
+     834C   BD 6D 82   LDA &826D,X
+     834F   85 88      STA &88
+     8351   BD 75 82   LDA &8275,X
+     8354   85 89      STA &89
+     8356   BD 7D 82   LDA &827D,X
+     8359   85 8A      STA &8A
+     835B   BD 85 82   LDA &8285,X
+     835E   85 8B      STA &8B
+     8360   BD 8D 82   LDA &828D,X
+     8363   8D DB 83   STA &83DB
+     8366   BD 95 82   LDA &8295,X
+     8369   8D E2 83   STA &83E2
+     836C   20 09 84   JSR &8409
+     836F   8D 9F 83   STA &839F
 .loadX
-     834A   A2 00      LDX #&00
-     834C   A5 86      LDA &86
-     834E   9D 35 82   STA &8235,X
-     8351   A5 87      LDA &87
-     8353   9D 3D 82   STA &823D,X
-     8356   A5 88      LDA &88
-     8358   9D 45 82   STA &8245,X
-     835B   A5 89      LDA &89
-     835D   9D 4D 82   STA &824D,X
-     8360   A5 8A      LDA &8A
-     8362   9D 55 82   STA &8255,X
-     8365   A5 8B      LDA &8B
-     8367   9D 5D 82   STA &825D,X
-     836A   AD B3 83   LDA &83B3
-     836D   9D 65 82   STA &8265,X
-     8370   AD BA 83   LDA &83BA
-     8373   9D 6D 82   STA &826D,X
+     8372   A2 00      LDX #&00
+     8374   A5 86      LDA &86
+     8376   9D 5D 82   STA &825D,X
+     8379   A5 87      LDA &87
+     837B   9D 65 82   STA &8265,X
+     837E   A5 88      LDA &88
+     8380   9D 6D 82   STA &826D,X
+     8383   A5 89      LDA &89
+     8385   9D 75 82   STA &8275,X
+     8388   A5 8A      LDA &8A
+     838A   9D 7D 82   STA &827D,X
+     838D   A5 8B      LDA &8B
+     838F   9D 85 82   STA &8285,X
+     8392   AD DB 83   LDA &83DB
+     8395   9D 8D 82   STA &828D,X
+     8398   AD E2 83   LDA &83E2
+     839B   9D 95 82   STA &8295,X
 .loadA
-     8376   A9 00      LDA #&00
-     8378   60         RTS
+     839E   A9 00      LDA #&00
+     83A0   60         RTS
 .vgm_update_register1
-     8379   AA         TAX
-     837A   18         CLC
-     837B   DE 8C 82   DEC &828C,X
-     837E   D0 25      BNE &83A5
-     8380   8E 88 82   STX &8288
-     8383   20 0C 83   JSR &830C
-     8386   A8         TAY
-     8387   29 0F      AND #&0F
-     8389   AE 88 82   LDX &8288
-     838C   1D 94 82   ORA &8294,X
-     838F   C9 EF      CMP #&EF
-     8391   F0 03      BEQ &8396
-     8393   20 ED 81   JSR &81ED
+     83A1   AA         TAX
+     83A2   18         CLC
+     83A3   DE B4 82   DEC &82B4,X
+     83A6   D0 25      BNE &83CD
+     83A8   8E B0 82   STX &82B0
+     83AB   20 34 83   JSR &8334
+     83AE   A8         TAY
+     83AF   29 0F      AND #&0F
+     83B1   AE B0 82   LDX &82B0
+     83B4   1D BC 82   ORA &82BC,X
+     83B7   C9 EF      CMP #&EF
+     83B9   F0 03      BEQ &83BE
+     83BB   20 15 82   JSR &8215
 .skip_tone3
-     8396   98         TYA
-     8397   4A         LSR A
-     8398   4A         LSR A
-     8399   4A         LSR A
-     839A   4A         LSR A
-     839B   18         CLC
-     839C   69 01      ADC #&01
-     839E   AE 88 82   LDX &8288
-     83A1   9D 8C 82   STA &828C,X
-     83A4   38         SEC
+     83BE   98         TYA
+     83BF   4A         LSR A
+     83C0   4A         LSR A
+     83C1   4A         LSR A
+     83C2   4A         LSR A
+     83C3   18         CLC
+     83C4   69 01      ADC #&01
+     83C6   AE B0 82   LDX &82B0
+     83C9   9D B4 82   STA &82B4,X
+     83CC   38         SEC
 .skip_register_update
-     83A5   60         RTS
+     83CD   60         RTS
 .vgm_update_register2
-     83A6   20 79 83   JSR &8379
-     83A9   90 FA      BCC &83A5
-     83AB   8A         TXA
-     83AC   20 0C 83   JSR &830C
-     83AF   4C ED 81   JMP &81ED
+     83CE   20 A1 83   JSR &83A1
+     83D1   90 FA      BCC &83CD
+     83D3   8A         TXA
+     83D4   20 34 83   JSR &8334
+     83D7   4C 15 82   JMP &8215
 .vgm_end
 .decoder_start
 .lz_fetch_buffer
-     83B2   AD FF FF   LDA &FFFF
-     83B5   EE B3 83   INC &83B3
-     83B8   60         RTS
+     83DA   AD FF FF   LDA &FFFF
+     83DD   EE DB 83   INC &83DB
+     83E0   60         RTS
 .lz_store_buffer
-     83B9   8D FF FF   STA &FFFF
-     83BC   EE BA 83   INC &83BA
-     83BF   60         RTS
+     83E1   8D FF FF   STA &FFFF
+     83E4   EE E2 83   INC &83E2
+     83E7   60         RTS
 .lz_fetch_count
-     83C0   A2 00      LDX #&00
-     83C2   C9 0F      CMP #&0F
-     83C4   D0 1A      BNE &83E0
-     83C6   85 8C      STA &8C
-     83C8   86 8D      STX &8D
+     83E8   A2 00      LDX #&00
+     83EA   C9 0F      CMP #&0F
+     83EC   D0 1A      BNE &8408
+     83EE   85 8C      STA &8C
+     83F0   86 8D      STX &8D
 .fetch
 .fetchByte1
-     83CA   20 71 84   JSR &8471
-     83CD   A8         TAY
-     83CE   18         CLC
-     83CF   65 8C      ADC &8C
-     83D1   85 8C      STA &8C
-     83D3   A5 8D      LDA &8D
-     83D5   69 00      ADC #&00
-     83D7   85 8D      STA &8D
-     83D9   C0 FF      CPY #&FF
-     83DB   F0 ED      BEQ &83CA
-     83DD   AA         TAX
-     83DE   A5 8C      LDA &8C
+     83F2   20 99 84   JSR &8499
+     83F5   A8         TAY
+     83F6   18         CLC
+     83F7   65 8C      ADC &8C
+     83F9   85 8C      STA &8C
+     83FB   A5 8D      LDA &8D
+     83FD   69 00      ADC #&00
+     83FF   85 8D      STA &8D
+     8401   C0 FF      CPY #&FF
+     8403   F0 ED      BEQ &83F2
+     8405   AA         TAX
+     8406   A5 8C      LDA &8C
 .lz_fetch_count_done
-     83E0   60         RTS
+     8408   60         RTS
 .lz_decode_byte
 .try_literal
-     83E1   A5 88      LDA &88
-     83E3   D0 04      BNE &83E9
-     83E5   A5 89      LDA &89
-     83E7   F0 32      BEQ &841B
+     8409   A5 88      LDA &88
+     840B   D0 04      BNE &8411
+     840D   A5 89      LDA &89
+     840F   F0 32      BEQ &8443
 .is_literal
 .fetchByte2
-     83E9   20 71 84   JSR &8471
-     83EC   20 B9 83   JSR &83B9
-     83EF   8D 19 84   STA &8419
-     83F2   E6 88      INC &88
-     83F4   D0 02      BNE &83F8
-     83F6   E6 89      INC &89
+     8411   20 99 84   JSR &8499
+     8414   20 E1 83   JSR &83E1
+     8417   8D 41 84   STA &8441
+     841A   E6 88      INC &88
+     841C   D0 02      BNE &8420
+     841E   E6 89      INC &89
 .done
-     83F8   D0 1E      BNE &8418
+     8420   D0 1E      BNE &8440
 .begin_matches
 .fetchByte3
-     83FA   20 71 84   JSR &8471
-     83FD   8D 05 84   STA &8405
-     8400   AD BA 83   LDA &83BA
-     8403   38         SEC
+     8422   20 99 84   JSR &8499
+     8425   8D 2D 84   STA &842D
+     8428   AD E2 83   LDA &83E2
+     842B   38         SEC
 .stashS
-     8404   E9 00      SBC #&00
-     8406   8D B3 83   STA &83B3
-     8409   A5 8A      LDA &8A
-     840B   20 C0 83   JSR &83C0
-     840E   18         CLC
-     840F   69 04      ADC #&04
-     8411   85 8A      STA &8A
-     8413   90 01      BCC &8416
-     8415   E8         INX
+     842C   E9 00      SBC #&00
+     842E   8D DB 83   STA &83DB
+     8431   A5 8A      LDA &8A
+     8433   20 E8 83   JSR &83E8
+     8436   18         CLC
+     8437   69 04      ADC #&04
+     8439   85 8A      STA &8A
+     843B   90 01      BCC &843E
+     843D   E8         INX
 .store_hi
-     8416   86 8B      STX &8B
+     843E   86 8B      STX &8B
 .end_literal
 .stashA
-     8418   A9 00      LDA #&00
-     841A   60         RTS
+     8440   A9 00      LDA #&00
+     8442   60         RTS
 .try_match
-     841B   A5 8B      LDA &8B
-     841D   D0 04      BNE &8423
-     841F   A5 8A      LDA &8A
-     8421   F0 14      BEQ &8437
+     8443   A5 8B      LDA &8B
+     8445   D0 04      BNE &844B
+     8447   A5 8A      LDA &8A
+     8449   F0 14      BEQ &845F
 .is_match
-     8423   20 B2 83   JSR &83B2
-     8426   20 B9 83   JSR &83B9
-     8429   8D 35 84   STA &8435
-     842C   A5 8A      LDA &8A
-     842E   D0 02      BNE &8432
-     8430   C6 8B      DEC &8B
+     844B   20 DA 83   JSR &83DA
+     844E   20 E1 83   JSR &83E1
+     8451   8D 5D 84   STA &845D
+     8454   A5 8A      LDA &8A
+     8456   D0 02      BNE &845A
+     8458   C6 8B      DEC &8B
 .skiphi
-     8432   C6 8A      DEC &8A
+     845A   C6 8A      DEC &8A
 .end_match
 .stashAA
-     8434   A9 00      LDA #&00
-     8436   60         RTS
+     845C   A9 00      LDA #&00
+     845E   60         RTS
 .try_token
 .fetchByte5
-     8437   20 71 84   JSR &8471
-     843A   AA         TAX
-     843B   A0 00      LDY #&00
-     843D   29 0F      AND #&0F
-     843F   85 8A      STA &8A
-     8441   84 8B      STY &8B
-     8443   8A         TXA
-     8444   4A         LSR A
-     8445   4A         LSR A
-     8446   4A         LSR A
-     8447   4A         LSR A
-     8448   20 C0 83   JSR &83C0
-     844B   85 88      STA &88
-     844D   86 89      STX &89
-     844F   E0 00      CPX #&00
-     8451   D0 0A      BNE &845D
-     8453   C9 00      CMP #&00
-     8455   D0 06      BNE &845D
-     8457   20 FA 83   JSR &83FA
-     845A   4C 1B 84   JMP &841B
+     845F   20 99 84   JSR &8499
+     8462   AA         TAX
+     8463   A0 00      LDY #&00
+     8465   29 0F      AND #&0F
+     8467   85 8A      STA &8A
+     8469   84 8B      STY &8B
+     846B   8A         TXA
+     846C   4A         LSR A
+     846D   4A         LSR A
+     846E   4A         LSR A
+     846F   4A         LSR A
+     8470   20 E8 83   JSR &83E8
+     8473   85 88      STA &88
+     8475   86 89      STX &89
+     8477   E0 00      CPX #&00
+     8479   D0 0A      BNE &8485
+     847B   C9 00      CMP #&00
+     847D   D0 06      BNE &8485
+     847F   20 22 84   JSR &8422
+     8482   4C 43 84   JMP &8443
 .has_literals
-     845D   18         CLC
-     845E   A5 88      LDA &88
-     8460   49 FF      EOR #&FF
-     8462   69 01      ADC #&01
-     8464   85 88      STA &88
-     8466   A5 89      LDA &89
-     8468   49 FF      EOR #&FF
-     846A   69 00      ADC #&00
-     846C   85 89      STA &89
-     846E   4C E1 83   JMP &83E1
+     8485   18         CLC
+     8486   A5 88      LDA &88
+     8488   49 FF      EOR #&FF
+     848A   69 01      ADC #&01
+     848C   85 88      STA &88
+     848E   A5 89      LDA &89
+     8490   49 FF      EOR #&FF
+     8492   69 00      ADC #&00
+     8494   85 89      STA &89
+     8496   4C 09 84   JMP &8409
 .lz_fetch_byte
-     8471   A0 00      LDY #&00
-     8473   B1 86      LDA (&86),Y
-     8475   E6 86      INC &86
-     8477   D0 02      BNE &847B
-     8479   E6 87      INC &87
+     8499   A0 00      LDY #&00
+     849B   B1 86      LDA (&86),Y
+     849D   E6 86      INC &86
+     849F   D0 02      BNE &84A3
+     84A1   E6 87      INC &87
 .ok
-     847B   60         RTS
+     84A3   60         RTS
 .decoder_end
     decoder code size is202 bytes
  vgm player code size is689 bytes
@@ -609,10 +640,9 @@ total vgm player size is891 bytes
       vgc tune 1 size is3986 bytes
 .vgm_data2
       vgc tune 2 size is6352 bytes
-          alignment lost34 bytes
+          alignment lost250 bytes
 .vgm_buffer_start
 .vgm_stream_buffers
-     AD00
      AE00
      AF00
      B000
@@ -620,7 +650,8 @@ total vgm player size is891 bytes
      B200
      B300
      B400
+     B500
 .vgm_buffer_end
 .end
-           total size is3500 bytes
+           total size is3600 bytes
 Saving file 'elite-music.rom'

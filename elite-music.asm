@@ -5,67 +5,23 @@
 ; https://github.com/simondotm/vgm-packer
 ;******************************************************************
 
-
 \ MM - Set addresses from main Elite source
-
-INCLUDE "elite-music-build-options.asm"
-
-_DISC_VERSION           = (_VARIANT = 1)
-_MASTER_VERSION         = (_VARIANT = 2)
-_6502SP_VERSION         = (_VARIANT = 3)
-
-IF _DISC_VERSION
-
- musicWorkspace = &0092
- musicStatus    = &009B
-\musicOptions   = &03C4     \ COMC-1, which is unused in the disc version
-\DNOIZ          = &03C6
-\PlayMusic      = &11FE
-\play1          = &120F
-
-\keyE           = &22
-\keyM           = &65
-\keyQ           = &10
-
-ELIF _MASTER_VERSION
 
  musicWorkspace = &0086
  musicStatus    = &008F
 
-\psg_register   = &1220     \ XX24, which is unused in the Master version
-\vgm_volume     = &1223     \ XP
-\vgm_volume_mask = &1224    \ YP
-\volume_interp  = &1225     \ YS and BALI (2 bytes)
-\volume_increment = &1227   \ UPO
-\volume_store   = &1228     \ boxsize
-\volume_table   = &2C30     \ COMC-16
+\ELIF _6502SP_VERSION
 
-\musicOptions   = &2C41     \ dials, which is unused in the Master version
-\DNOIZ          = &2C55
-\VOL            = &2C61
-\PlayMusic      = &2D60
-\play1          = &2D71
-
-\keyE           = &45
-\keyM           = &4D
-\keyQ           = &51
-
-ELIF _6502SP_VERSION
-
- musicWorkspace = &0070
- musicStatus    = &0079
-\musicOptions   = &007A     \ musicStatus+1 is available
- DNOIZ          = &3DC2     \ This is a copy of DNOIZ in the I/O Processor
-\PlayMusic      = &3D64
- play1          = &3D75
+\musicWorkspace = &0070
+\musicStatus    = &0079
+\DNOIZ          = &3DC2     \ This is a copy of DNOIZ in the I/O Processor
+\play1          = &3D75
 
 \keyE           = &22
 \keyM           = &65
 \keyQ           = &10
 
-ENDIF
-
-_ENABLE_VOLUME = _MASTER_VERSION
+_ENABLE_VOLUME = TRUE
 
 ;----------------------------------------------------------------------------------------------------------
 ; Common code headers
@@ -103,16 +59,19 @@ jmp PlayCurrentTune ; &8006 \ MM - added check to skip playing if sound is disab
 jmp StopCurrentTune ; &8009 \ MM - moved into sideways RAM to save a few bytes
 jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
 
-; This table runs from &800F for 9 bytes
+; This table runs from &800F for 11 (&B) bytes
 
 .addrDNOIZ      EQUW &03C6
 .addrplay1      EQUW &120F+1    \ Store play1+1 here
-.addrVOL        EQUW &2C61
+.addrVOL        EQUW localVOL
 
 .keyE           EQUB &22        \ "E" = &22 BBC Micro, &45 Master
 .keyM           EQUB &65        \ "M" = &65 BBC Micro, &4D Master
 .keyQ           EQUB &10        \ "Q" = &10 BBC Micro, &51 Master
+.keyVolDown     EQUB &66        \ "<" = &66 BBC Micro, 
+.keyVolUp       EQUB &67        \ ">" = &67 BBC Micro, 
 
+.localVOL       EQUB 7
 ; code routines
 
 .init_tune1
@@ -121,7 +80,7 @@ IF _ENABLE_VOLUME
 
     JSR vgm_set_volume  \ MM - Initialise the volume table
 
-ENDIF
+ENDIF ; _ENABLE_VOLUME
 
     BIT musicOptions    \ MM - If bit 6 of musicOptions is set then tunes are
     BVS init_tune2s     \ swapped, so initialise tune 2 instead
@@ -143,7 +102,7 @@ IF _ENABLE_VOLUME
 
     JSR vgm_set_volume  \ MM - Initialise the volume table
 
-ENDIF
+ENDIF ; _ENABLE_VOLUME
 
     BIT musicOptions    \ MM - If bit 6 of musicOptions is set then tunes are
     BVS init_tune1s     \ swapped, so  initialise tune 1 instead
@@ -179,11 +138,11 @@ ENDIF
  JSR init_tune2         \ Select the docking music
 
  LDA addrplay1          \ Modify STA &FFFF below to STA play1+1
- STA modify+3
+ STA modifyPlay+3
  LDA addrplay1+1
- STA modify+4
+ STA modifyPlay+4
 
-.modify
+.modifyPlay
 
  LDA #6                 \ Modify the PlayMusic routine so it plays music on the
  STA &FFFF              \ next call
@@ -199,11 +158,11 @@ ENDIF
                         \ whether sound is enabled before playing anything
 
  LDA addrDNOIZ          \ Modify LDA &FFFF below to LDA DNOIZ
- STA modify+1
+ STA modifyDNOIZ+1
  LDA addrDNOIZ+1
- STA modify+2
+ STA modifyDNOIZ+2
 
-.modify
+.modifyDNOIZ
 
  LDA &FFFF              \ If DNOIZ is non-zero, then sound is disabled, so
  BNE tune1              \ return from the subroutine
@@ -235,7 +194,29 @@ ENDIF
                         \   * Bit 6 set = swap tunes 1 and 2
                         \           clear = default tunes (default)
 
-IF _DISC_VERSION OR _MASTER_VERSION
+                        \ First, we modify the addresses to point to the
+                        \ correct locations for this platform
+
+ LDA addrDNOIZ          \ Modify STX &FFFF below to LDA DNOIZ
+ STA modifyDNOIZ1+1
+ LDA addrDNOIZ+1
+ STA modifyDNOIZ1+2
+
+ LDA addrVOL            \ Modify LDY &FFFF to LDY VOL
+ STA modifyVol1+1       \        STY &FFFF to LDY VOL
+ STA modifyVol2+1
+ LDA addrVOL+1
+ STA modifyVol1+2
+ STA modifyVol2+2
+
+ LDA addrplay1          \ Modify STA &FFFF below to STA play1+1 x 3
+ STA modifyPlay1+3
+ STA modifyPlay2+3
+ STA modifyPlay3+3
+ LDA addrplay1+1
+ STA modifyPlay1+4
+ STA modifyPlay2+4
+ STA modifyPlay3+4
 
                         \ We start with the "Q" logic that we replaced with the
                         \ injected call to this routine
@@ -243,21 +224,59 @@ IF _DISC_VERSION OR _MASTER_VERSION
  CPX keyQ               \ If "Q" is not being pressed, skip to DK7
  BNE DK7
 
- LDA addrDNOIZ          \ Modify STX &FFFF below to LDA DNOIZ
- STA modify1+1
- LDA addrDNOIZ+1
- STA modify1+2
-
-.modify1
+.modifyDNOIZ1
 
  STX &FFFF              \ "Q" is being pressed, so set DNOIZ to X, which is
-                        \ non-zero (&10), so this will turn the sound off
+                        \ non-zero (keyQ), so this will turn the sound off
 
  JSR StopCurrentTune    \ Stop the current tune
 
 .DK7
 
-ENDIF
+                        \ Next we implement the volume logic from the Master
+
+.modifyVol1
+
+ LDY &FFFF              \ Fetch the current volume setting into Y
+
+ CPX keyVolUp           \ If "." is being pressed (i.e. the ">" key) then jump
+ BEQ DOVOL1             \ to DOVOL1 to increase the volume
+
+ CPX keyVolDown         \ If "," is not being pressed (i.e. the "<" key) then
+ BNE DOVOL4             \ jump to DOVOL4 to skip the following
+
+ DEY                    \ The volume down key is being pressed, so decrement the
+                        \ volume level in Y
+
+ EQUB &24               \ Skip the next instruction by turning it into &24 &1A,
+                        \ or BIT &001A, which does nothing apart from affect the
+                        \ flags
+
+.DOVOL1
+
+ INY                    \ The volume up key is being pressed, so increment the
+                        \ volume level in Y
+
+ TYA                    \ Copy the new volume level to A
+
+ AND #%11111000         \ If any of bits 3-7 are set, skip to DOVOL3 as we have
+ BNE DOVOL3             \ either increased the volume past the maximum volume of
+                        \ 7, or we have decreased it below 0 to -1, and in
+                        \ neither case do we want to change the volume as we are
+                        \ already at the maximum or minimum level
+
+.modifyVol2
+
+ STY &FFFF              \ Store the new volume level in VOL
+
+.DOVOL3
+
+ BIT setVFlag           \ Set the V flag and clear the C flag
+
+ RTS                    \ Return from the subroutine to make a high beep to
+                        \ indicate a volume change
+
+.DOVOL4
 
                         \ The new "M" option switches music on and off
 
@@ -294,12 +313,7 @@ ENDIF
  PLA                    \ If we were not playing music before we switched tunes,
  BEQ opts2              \ jump to opts2
 
- LDA addrplay1          \ Modify STA &FFFF below to STA play1+1
- STA modify2+3
- LDA addrplay1+1
- STA modify2+4
-
-.modify2
+.modifyPlay1
 
  LDA #6                 \ Modify the PlayMusic routine so it plays music on the
  STA &FFFF              \ next call
@@ -319,20 +333,16 @@ IF _ENABLE_VOLUME
  JSR vgm_set_volume     \ Update the volume table in case volume or music
                         \ settings have changed
 
-ENDIF
+ENDIF ; _ENABLE_VOLUME
 
- LDA addrplay1          \ Modify STA &FFFF below to STA play1+1
- STA modify3+3
- LDA addrplay1+1
- STA modify3+4
-
-.modify3
+.modifyPlay2
 
  LDA #6                 \ Modify the PlayMusic routine so it plays music on the
  STA &FFFF              \ next call
 
  CLC                    \ Return from the subroutine with the C flag clear so
- RTS                    \ we know not to make a beep
+ CLV                    \ we know not to make a beep, and the V flag clear so
+ RTS                    \ we know not to make a high beep
 
 .opts4
 
@@ -341,21 +351,20 @@ IF _ENABLE_VOLUME
  JSR vgm_set_volume     \ Update the volume table in case volume or music
                         \ settings have changed
 
-ENDIF
+ENDIF ; _ENABLE_VOLUME
 
- LDA addrplay1          \ Modify STA &FFFF below to STA play1+1
- STA modify4+3
- LDA addrplay1+1
- STA modify4+4
-
-.modify4
+.modifyPlay3
 
  LDA #6                 \ Modify the PlayMusic routine so it plays music on the
  STA &FFFF              \ next call
 
  SEC                    \ Return from the subroutine with the C flag set, so we
- RTS                    \ can make a beep and delay for a bit
+ CLV                    \ can make a beep and delay for a bit, and the V flag
+ RTS                    \ clear so we know not to make a high beep
 
+.setVFlag
+
+ EQUB %01000000         \ Used to set the V flag to denote a volume change
 }
 
 ; library code

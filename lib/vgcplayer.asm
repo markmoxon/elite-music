@@ -118,6 +118,8 @@ ENDIF
     jmp sn_reset ; also returns non-zero in A
 }
 
+.musicOptions       EQUB 0
+
 IF _ENABLE_VOLUME
 
 ; Volume code taken from:
@@ -147,8 +149,6 @@ IF _ENABLE_VOLUME
 ;
 .vgm_volume			EQUB 15 ; volume is 0-15 where 0 is silence, 15 is full
 .vgm_volume_mask	EQUB 0	; set to 0 for no volume adjust, 15 for full audio mask
-
-.musicOptions       EQUB 0
 
 ; set volume by setting the 16-byte volume_table ramp using a hacky linear interpolation
 ; TODO: needs a bug fix as the full volume ramp is out by 1 level
@@ -243,8 +243,7 @@ IF _ENABLE_VOLUME
 	rts
 }
 
-
-ENDIF
+ENDIF ; _ENABLE_VOLUME
 
 ;-------------------------------------------
 ; Sound chip routines
