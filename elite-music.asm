@@ -44,14 +44,14 @@ ELIF _MASTER_VERSION
 \volume_table   = &2C30     \ COMC-16
 
 \musicOptions   = &2C41     \ dials, which is unused in the Master version
- DNOIZ          = &2C55
- VOL            = &2C61
+\DNOIZ          = &2C55
+\VOL            = &2C61
 \PlayMusic      = &2D60
- play1          = &2D71
+\play1          = &2D71
 
- keyE           = &45
- keyM           = &4D
- keyQ           = &51
+\keyE           = &45
+\keyM           = &4D
+\keyQ           = &51
 
 ELIF _6502SP_VERSION
 
@@ -105,6 +105,17 @@ jmp init_tune2      ; &8003
 jmp PlayCurrentTune ; &8006 \ MM - added check to skip playing if sound is disabled
 jmp StopCurrentTune ; &8009 \ MM - moved into sideways RAM to save a few bytes
 jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
+
+.addrDNOIZ      EQUW &2C55
+.addrplay1      EQUW &2D71+1    \ Store play1+1 here
+.addrVOL        EQUW &2C61
+
+.keyE           EQUB &45        \ "E" = &22 BBC Micro, &45 Master
+.keyM           EQUB &4D        \ "M" = &65 BBC Micro, &4D Master
+.keyQ           EQUB &51        \ "Q" = &10 BBC Micro, &51 Master
+
+.keyVolUp       EQUB &00
+.keyVolDown     EQUB &00
 
 ; code routines
 
@@ -171,8 +182,15 @@ ENDIF
 
  JSR init_tune2         \ Select the docking music
 
+ LDA addrplay1          \ Modify STA &FFFF below to STA play1+1
+ STA modify+3
+ LDA addrplay1+1
+ STA modify+4
+
+.modify
+
  LDA #6                 \ Modify the PlayMusic routine so it plays music on the
- STA play1+1            \ next call
+ STA &FFFF              \ next call
 
  RTS                    \ Return from the subroutine
 
@@ -184,7 +202,14 @@ ENDIF
                         \ MM - routine added to play music, which checks to see
                         \ whether sound is enabled before playing anything
 
- LDA DNOIZ              \ If DNOIZ is non-zero, then sound is disabled, so
+ LDA addrDNOIZ          \ Modify LDA &FFFF below to LDA DNOIZ
+ STA modify+1
+ LDA addrDNOIZ+1
+ STA modify+2
+
+.modify
+
+ LDA &FFFF              \ If DNOIZ is non-zero, then sound is disabled, so
  BNE tune1              \ return from the subroutine
 
  BIT musicOptions       \ If bit 7 of musicOptions is set then music is
@@ -219,10 +244,17 @@ IF _DISC_VERSION OR _MASTER_VERSION
                         \ We start with the "Q" logic that we replaced with the
                         \ injected call to this routine
 
- CPX #keyQ              \ If "Q" is not being pressed, skip to DK7
+ CPX keyQ               \ If "Q" is not being pressed, skip to DK7
  BNE DK7
 
- STX DNOIZ              \ "Q" is being pressed, so set DNOIZ to X, which is
+ LDA addrDNOIZ          \ Modify STX &FFFF below to LDA DNOIZ
+ STA modify1+1
+ LDA addrDNOIZ+1
+ STA modify1+2
+
+.modify1
+
+ STX &FFFF              \ "Q" is being pressed, so set DNOIZ to X, which is
                         \ non-zero (&10), so this will turn the sound off
 
  JSR StopCurrentTune    \ Stop the current tune
@@ -233,7 +265,7 @@ ENDIF
 
                         \ The new "M" option switches music on and off
 
- CPX #keyM              \ If "M" is not being pressed, skip to opts1
+ CPX keyM               \ If "M" is not being pressed, skip to opts1
  BNE opts1
 
  JSR StopCurrentTune    \ Stop the current tune
@@ -249,7 +281,7 @@ ENDIF
 
                         \ The new "E" option swaps the docking and title tunes
 
- CPX #keyE              \ If "E" is not being pressed, skip to opts3
+ CPX keyE               \ If "E" is not being pressed, skip to opts3
  BNE opts3
 
  LDA musicStatus        \ Store the flags for musicStatus on the stack 
@@ -266,8 +298,15 @@ ENDIF
  PLA                    \ If we were not playing music before we switched tunes,
  BEQ opts2              \ jump to opts2
 
+ LDA addrplay1          \ Modify STA &FFFF below to STA play1+1
+ STA modify2+3
+ LDA addrplay1+1
+ STA modify2+4
+
+.modify2
+
  LDA #6                 \ Modify the PlayMusic routine so it plays music on the
- STA play1+1            \ next call
+ STA &FFFF              \ next call
 
  STA musicStatus        \ Start playing music again by setting musicStatus to
                         \ a non-zero value
@@ -286,8 +325,15 @@ IF _ENABLE_VOLUME
 
 ENDIF
 
+ LDA addrplay1          \ Modify STA &FFFF below to STA play1+1
+ STA modify3+3
+ LDA addrplay1+1
+ STA modify3+4
+
+.modify3
+
  LDA #6                 \ Modify the PlayMusic routine so it plays music on the
- STA play1+1            \ next call
+ STA &FFFF              \ next call
 
  CLC                    \ Return from the subroutine with the C flag clear so
  RTS                    \ we know not to make a beep
@@ -301,8 +347,15 @@ IF _ENABLE_VOLUME
 
 ENDIF
 
+ LDA addrplay1          \ Modify STA &FFFF below to STA play1+1
+ STA modify4+3
+ LDA addrplay1+1
+ STA modify4+4
+
+.modify4
+
  LDA #6                 \ Modify the PlayMusic routine so it plays music on the
- STA play1+1            \ next call
+ STA &FFFF              \ next call
 
  SEC                    \ Return from the subroutine with the C flag set, so we
  RTS                    \ can make a beep and delay for a bit

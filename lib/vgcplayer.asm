@@ -155,32 +155,41 @@ IF _ENABLE_VOLUME
 ; Note that volumes below 7 will degrade music quality due to lack of precision
 .vgm_set_volume
 {
-    PHA                 \ Preserve registers
-    PHX
-    PHY
+	PHA                 \ Preserve registers A, X, Y
+	TXA
+	PHA
+	TYA
+	PHA
 
-    BIT musicOptions    \ If bit 7 of musicOptions is set then music is
-    BMI noMusic         \ disabled, so jump to noMusic to zero vgm_volume_mask
+	BIT musicOptions    \ If bit 7 of musicOptions is set then music is
+	BMI noMusic         \ disabled, so jump to noMusic to zero vgm_volume_mask
 
-    LDA #0              \ Music is enabled so set A = 0 to use as the value for
-                        \ vgm_volume_mask below
+	LDA #0              \ Music is enabled so set A = 0 to use as the value for
+	                    \ vgm_volume_mask below
 
-    EQUB &2C            \ Skip the next instruction by turning it into
-                        \ &2C &A9 &00, or BIT &00A9, which does nothing apart
-                        \ from affect the flags
+	EQUB &2C            \ Skip the next instruction by turning it into
+	                    \ &2C &A9 &00, or BIT &00A9, which does nothing apart
+	                    \ from affect the flags
 
 .noMusic
 
-    LDA #%00001111      \ Music is disabled so set A = %00001111 to use as the
-                        \ value for vgm_volume_mask
+	LDA #%00001111      \ Music is disabled so set A = %00001111 to use as the
+	                    \ value for vgm_volume_mask
 
-    STA vgm_volume_mask \ Set vgm_volume_mask to 0 (no music) or 15 (music)
+	STA vgm_volume_mask \ Set vgm_volume_mask to 0 (no music) or 15 (music)
 
-    LDA VOL             \ Grab volume 0-7 from VOL and scale to 0-15
-    ASL A
-    TAX
-    BEQ P%+3
-    INX
+    LDA addrVOL         \ Modify &FFFF below to LDA VOL
+    STA modify+1
+    LDA addrVOL+1
+    STA modify+2
+
+.modify
+
+	LDA &FFFF           \ Grab volume 0-7 from VOL and scale to 0-15
+	ASL A
+	TAX
+	BEQ P%+3
+	INX
 
 ;	stx volume_store
 	lda #15
@@ -225,9 +234,11 @@ IF _ENABLE_VOLUME
 	cpx #16
 	bne loopx2
 
-    PLA                 \ Restore registers
-    PLX
-    PLY
+	PLA                 \ Restore registers Y, X, A
+	TAY
+	PLA
+	TAX
+	PLA
 
 	rts
 }
