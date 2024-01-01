@@ -10,16 +10,7 @@
  musicWorkspace = &0086
  musicStatus    = &008F
 
-\ELIF _6502SP_VERSION
-
-\musicWorkspace = &0070
-\musicStatus    = &0079
-\DNOIZ          = &3DC2     \ This is a copy of DNOIZ in the I/O Processor
-\play1          = &3D75
-
-\keyE           = &22
-\keyM           = &65
-\keyQ           = &10
+\ MM - Enable volume control code
 
 _ENABLE_VOLUME = TRUE
 
@@ -59,19 +50,30 @@ jmp PlayCurrentTune ; &8006 \ MM - added check to skip playing if sound is disab
 jmp StopCurrentTune ; &8009 \ MM - moved into sideways RAM to save a few bytes
 jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
 
-; This table runs from &800F for 11 (&B) bytes
+\ MM - Added a lookup table for addresses and constants that differ between the
+\ three platforms (BBC Micro, 6502SP, BBC Master)
+\
+\ The default values are those for the BBC Micro, so only the 6502SP and BBC
+\ Master versions need to change these values (which is done once the ROM image
+\ has been loaded into sideways RAM)
+\
+\ This table runs from &800F for 11 (&B) bytes
 
-.addrDNOIZ      EQUW &03C6
+.addrDNOIZ      EQUW &03C6      \ Store DNOIZ here
 .addrplay1      EQUW &120F+1    \ Store play1+1 here
-.addrVOL        EQUW localVOL
+.addrVOL        EQUW localVOL   \ Store the address of the volume variable here
 
 .keyE           EQUB &22        \ "E" = &22 BBC Micro, &45 Master
 .keyM           EQUB &65        \ "M" = &65 BBC Micro, &4D Master
 .keyQ           EQUB &10        \ "Q" = &10 BBC Micro, &51 Master
-.keyVolDown     EQUB &66        \ "<" = &66 BBC Micro, 
-.keyVolUp       EQUB &67        \ ">" = &67 BBC Micro, 
+.keyVolDown     EQUB &66        \ "<" = &66 BBC Micro, &2C Master
+.keyVolUp       EQUB &67        \ ">" = &67 BBC Micro, &2E Master
 
-.localVOL       EQUB 7
+\ MM - Volume variable for BBC Micro and 6502SP (BBC Master already has a
+\ volume variable VOL)
+
+.localVOL       EQUB 7          \ Starting volume is 7 (full)
+
 ; code routines
 
 .init_tune1

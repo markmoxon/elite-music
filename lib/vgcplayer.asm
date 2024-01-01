@@ -155,13 +155,13 @@ IF _ENABLE_VOLUME
 ; Note that volumes below 7 will degrade music quality due to lack of precision
 .vgm_set_volume
 {
-	PHA                 \ Preserve registers A, X, Y
+	PHA                 \ MM - Preserve registers A, X, Y
 	TXA
 	PHA
 	TYA
 	PHA
 
-	BIT musicOptions    \ If bit 7 of musicOptions is set then music is
+	BIT musicOptions    \ MM - If bit 7 of musicOptions is set then music is
 	BMI noMusic         \ disabled, so jump to noMusic to zero vgm_volume_mask
 
 	LDA #0              \ Music is enabled so set A = 0 to use as the value for
@@ -173,8 +173,8 @@ IF _ENABLE_VOLUME
 
 .noMusic
 
-	LDA #%00001111      \ Music is disabled so set A = %00001111 to use as the
-	                    \ value for vgm_volume_mask
+	LDA #%00001111      \ MM - Music is disabled so set A = %00001111 to use as
+	                    \ the value for vgm_volume_mask
 
 	STA vgm_volume_mask \ Set vgm_volume_mask to 0 (no music) or 15 (music)
 
@@ -185,7 +185,7 @@ IF _ENABLE_VOLUME
 
 .modify
 
-	LDA &FFFF           \ Grab volume 0-7 from VOL and scale to 0-15
+	LDA &FFFF           \ MM - Grab volume 0-7 from VOL and scale to 0-15
 	ASL A
 	TAX
 	BEQ P%+3
@@ -234,7 +234,7 @@ IF _ENABLE_VOLUME
 	cpx #16
 	bne loopx2
 
-	PLA                 \ Restore registers Y, X, A
+	PLA                 \ MM - Restore registers Y, X, A
 	TAY
 	PLA
 	TAX
