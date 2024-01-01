@@ -84,6 +84,8 @@ IF _ENABLE_VOLUME
 
 ENDIF ; _ENABLE_VOLUME
 
+    JSR ModifyCode      \ MM - Modify code to contain correct addresses
+
     BIT musicOptions    \ MM - If bit 6 of musicOptions is set then tunes are
     BVS init_tune2s     \ swapped, so initialise tune 2 instead
 
@@ -106,6 +108,8 @@ IF _ENABLE_VOLUME
 
 ENDIF ; _ENABLE_VOLUME
 
+    JSR ModifyCode      \ MM - Modify code to contain correct addresses
+
     BIT musicOptions    \ MM - If bit 6 of musicOptions is set then tunes are
     BVS init_tune1s     \ swapped, so  initialise tune 1 instead
 
@@ -119,6 +123,44 @@ ENDIF ; _ENABLE_VOLUME
     jmp vgm_init
 }
 
+.ModifyCode
+{
+ LDA addrDNOIZ          \ Modify LDA &FFFF to LDA DNOIZ
+ STA modifyPlayDNOIZ1+1 \         STA &FFFF to STA DNOIZ
+ STA modifyPlayDNOIZ2+3  
+ STA modifyStopDNOIZ1+1
+ STA modifyStopDNOIZ2+3  
+ STA modifyOptsDNOIZ1+3
+ LDA addrDNOIZ+1
+ STA modifyPlayDNOIZ1+2
+ STA modifyPlayDNOIZ2+4
+ STA modifyStopDNOIZ1+2
+ STA modifyStopDNOIZ2+4  
+ STA modifyOptsDNOIZ1+4
+
+ LDA addrVOL            \ Modify LDY &FFFF to LDY VOL
+ STA modifyOptsVOL1+1   \        STY &FFFF to STY VOL
+ STA modifyOptsVOL2+1
+ LDA addrVOL+1
+ STA modifyOptsVOL1+2
+ STA modifyOptsVOL2+2
+
+ LDA addrplay1          \ Modify STA &FFFF to STA play1+1
+ STA modifyPlayPlay1+3
+ STA modifyOptsPlay1+3
+ STA modifyOptsPlay2+3
+ STA modifyOptsPlay3+3
+ STA modifyOptsPlay4+3
+ LDA addrplay1+1
+ STA modifyPlayPlay1+4
+ STA modifyOptsPlay1+4
+ STA modifyOptsPlay2+4
+ STA modifyOptsPlay3+4
+ STA modifyOptsPlay4+4
+
+ RTS
+}
+
 .StopCurrentTune
 {
 
@@ -127,6 +169,19 @@ ENDIF ; _ENABLE_VOLUME
 
  LDA #0                 \ Clear the status flag to indicate we are not playing
  STA musicStatus        \ any music
+
+.^modifyStopDNOIZ1
+
+ LDA &FFFF              \ If DNOIZ is 1, then sound was enabled before we
+ CMP #1                 \ disabled it for the music, so keep going to enable the
+ BNE stop1              \ sound effects
+
+.^modifyStopDNOIZ2
+
+ LDA #0                 \ Set DNOIZ = 1 to disable sound effects while the
+ STA &FFFF              \ music is playing
+
+.stop1
 
  LDY #8                 \ Terminate the currently selected music
  STY vgm_finished
@@ -139,12 +194,7 @@ ENDIF ; _ENABLE_VOLUME
 
  JSR init_tune2         \ Select the docking music
 
- LDA addrplay1          \ Modify STA &FFFF below to STA play1+1
- STA modifyPlay+3
- LDA addrplay1+1
- STA modifyPlay+4
-
-.modifyPlay
+.^modifyPlayPlay1
 
  LDA #6                 \ Modify the PlayMusic routine so it plays music on the
  STA &FFFF              \ next call
@@ -158,19 +208,33 @@ ENDIF ; _ENABLE_VOLUME
 
                         \ MM - routine added to play music, which checks to see
                         \ whether sound is enabled before playing anything
+                        \
+                        \ We repurpose DNOIZ so it has the following values:
+                        \
+                        \   * 0 = sound is configured on (default)
+                        \
+                        \   * 1 = sound is configured on but music is playing,
+                        \         so disable sound effects while the music plays
+                        \
+                        \   * &FF = sound is configured off
+                        \
+                        \ When DNOIZ is non-zero, sound effects are not made, so
+                        \ we do not get sound effects during music play, as
+                        \ DNOIZ is 1
 
- LDA addrDNOIZ          \ Modify LDA &FFFF below to LDA DNOIZ
- STA modifyDNOIZ+1
- LDA addrDNOIZ+1
- STA modifyDNOIZ+2
+.^modifyPlayDNOIZ1
 
-.modifyDNOIZ
-
- LDA &FFFF              \ If DNOIZ is non-zero, then sound is disabled, so
- BNE tune1              \ return from the subroutine
+ LDX &FFFF              \ If DNOIZ is &FF, then sound is disabled, so
+ CPX #&FF               \ return from the subroutine
+ BEQ tune1
 
  BIT musicOptions       \ If bit 7 of musicOptions is set then music is
  BMI tune1              \ disabled, so return from the subroutine
+
+.^modifyPlayDNOIZ2
+
+ LDA #1                 \ Set DNOIZ = 1 to disable sound effects while the
+ STA &FFFF              \ music is playing
 
  JMP vgm_update         \ Otherwise sound is enabled, so jump to vgm_update to
                         \ play the music
@@ -196,39 +260,16 @@ ENDIF ; _ENABLE_VOLUME
                         \   * Bit 6 set = swap tunes 1 and 2
                         \           clear = default tunes (default)
 
-                        \ First, we modify the addresses to point to the
-                        \ correct locations for this platform
-
- LDA addrDNOIZ          \ Modify STX &FFFF below to LDA DNOIZ
- STA modifyDNOIZ1+1
- LDA addrDNOIZ+1
- STA modifyDNOIZ1+2
-
- LDA addrVOL            \ Modify LDY &FFFF to LDY VOL
- STA modifyVol1+1       \        STY &FFFF to LDY VOL
- STA modifyVol2+1
- LDA addrVOL+1
- STA modifyVol1+2
- STA modifyVol2+2
-
- LDA addrplay1          \ Modify STA &FFFF below to STA play1+1 x 3
- STA modifyPlay1+3
- STA modifyPlay2+3
- STA modifyPlay3+3
- LDA addrplay1+1
- STA modifyPlay1+4
- STA modifyPlay2+4
- STA modifyPlay3+4
-
                         \ We start with the "Q" logic that we replaced with the
                         \ injected call to this routine
 
  CPX keyQ               \ If "Q" is not being pressed, skip to DK7
  BNE DK7
 
-.modifyDNOIZ1
+.^modifyOptsDNOIZ1
 
- STX &FFFF              \ "Q" is being pressed, so set DNOIZ to X, which is
+ LDA #&FF
+ STA &FFFF              \ "Q" is being pressed, so set DNOIZ to X, which is
                         \ non-zero (keyQ), so this will turn the sound off
 
  JSR StopCurrentTune    \ Stop the current tune
@@ -237,7 +278,7 @@ ENDIF ; _ENABLE_VOLUME
 
                         \ Next we implement the volume logic from the Master
 
-.modifyVol1
+.^modifyOptsVOL1
 
  LDY &FFFF              \ Fetch the current volume setting into Y
 
@@ -267,11 +308,16 @@ ENDIF ; _ENABLE_VOLUME
                         \ neither case do we want to change the volume as we are
                         \ already at the maximum or minimum level
 
-.modifyVol2
+.^modifyOptsVOL2
 
  STY &FFFF              \ Store the new volume level in VOL
 
 .DOVOL3
+
+.^modifyOptsPlay1
+
+ LDA #6                 \ Modify the PlayMusic routine so it plays music on the
+ STA &FFFF              \ next call
 
  BIT setVFlag           \ Set the V flag and clear the C flag
 
@@ -315,7 +361,7 @@ ENDIF ; _ENABLE_VOLUME
  PLA                    \ If we were not playing music before we switched tunes,
  BEQ opts2              \ jump to opts2
 
-.modifyPlay1
+.^modifyOptsPlay2
 
  LDA #6                 \ Modify the PlayMusic routine so it plays music on the
  STA &FFFF              \ next call
@@ -337,7 +383,7 @@ IF _ENABLE_VOLUME
 
 ENDIF ; _ENABLE_VOLUME
 
-.modifyPlay2
+.^modifyOptsPlay3
 
  LDA #6                 \ Modify the PlayMusic routine so it plays music on the
  STA &FFFF              \ next call
@@ -355,7 +401,7 @@ IF _ENABLE_VOLUME
 
 ENDIF ; _ENABLE_VOLUME
 
-.modifyPlay3
+.^modifyOptsPlay4
 
  LDA #6                 \ Modify the PlayMusic routine so it plays music on the
  STA &FFFF              \ next call
