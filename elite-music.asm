@@ -7,8 +7,12 @@
 
 \ MM - Set addresses from main Elite source
 
- musicWorkspace = &0086
- musicStatus    = &008F
+ musicWorkspace = &0086 \ Must be the same in all platforms
+ musicStatus    = &008F \ Must be the same in all platforms
+
+ DL             = &0095 \ Disc version only, for use in localDELAY
+
+ OSWORD = &FFF1         \ The address for the OSWORD routine
 
 \ MM - Enable volume control code
 
@@ -57,10 +61,15 @@ jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
 \ Master versions need to change these values (which is done once the ROM image
 \ has been loaded into sideways RAM)
 \
-\ This table runs from &800F for 11 (&B) bytes
+\ This table runs from &800F
 
+.platform       EQUB 0          \ 0 = BBC Micro, 64 = 6502SP, 128 = Master
 .addrDNOIZ      EQUW &03C6      \ Store DNOIZ here
 .addrplay1      EQUW &120F+1    \ Store play1+1 here
+.addrDELAY      EQUW localDELAY \ Store DELAY here
+.addrSFX        EQUW &121D      \ Store SFX here
+.addrBEEP       EQUW localBEEP  \ Store BEEP here
+
 .addrVOL        EQUW localVOL   \ Store the address of the volume variable here
 
 .keyE           EQUB &22        \ "E" = &22 BBC Micro, &45 Master
@@ -126,17 +135,18 @@ ENDIF ; _ENABLE_VOLUME
 .ModifyCode
 {
  LDA addrDNOIZ          \ Modify LDA &FFFF to LDA DNOIZ
- STA modifyPlayDNOIZ1+1 \         STA &FFFF to STA DNOIZ
+ STA modifyPlayDNOIZ1+1 \        STA &FFFF to STA DNOIZ
  STA modifyPlayDNOIZ2+3  
  STA modifyStopDNOIZ1+1
  STA modifyStopDNOIZ2+3  
  STA modifyOptsDNOIZ1+3
+ STA modifyBeepDNOIZ1+1
  LDA addrDNOIZ+1
  STA modifyPlayDNOIZ1+2
  STA modifyPlayDNOIZ2+4
  STA modifyStopDNOIZ1+2
  STA modifyStopDNOIZ2+4  
- STA modifyOptsDNOIZ1+4
+ STA modifyBeepDNOIZ1+2
 
  LDA addrVOL            \ Modify LDY &FFFF to LDY VOL
  STA modifyOptsVOL1+1   \        STY &FFFF to STY VOL
@@ -157,6 +167,16 @@ ENDIF ; _ENABLE_VOLUME
  STA modifyOptsPlay2+4
  STA modifyOptsPlay3+4
  STA modifyOptsPlay4+4
+
+ LDA addrBEEP           \ Modify JSR FFFF to JSR BEEP
+ STA modifyOptsBEEP1+1
+ LDA addrBEEP+1
+ STA modifyOptsBEEP1+2
+
+ LDA addrDELAY          \ Modify JSR FFFF to JSR DELAY
+ STA modifyOptsDELAY1+3
+ LDA addrDELAY+1
+ STA modifyOptsDELAY1+4
 
  RTS
 }
@@ -199,8 +219,11 @@ ENDIF ; _ENABLE_VOLUME
  LDA #6                 \ Modify the PlayMusic routine so it plays music on the
  STA &FFFF              \ next call
 
- RTS                    \ Return from the subroutine
+ BIT platform           \ Update the sound effects volume in SFX (but not
+ BMI P%+5               \ on a Master, i.e. when bit 7 of platform is set)
+ JSR SetSoundFXVolume
 
+ RTS                    \ Return from the subroutine
 }
 
 .PlayCurrentTune
@@ -319,7 +342,24 @@ ENDIF ; _ENABLE_VOLUME
  LDA #6                 \ Modify the PlayMusic routine so it plays music on the
  STA &FFFF              \ next call
 
- BIT setVFlag           \ Set the V flag and clear the C flag
+ TXA                    \ Store X on the stack so we can retrieve it below after
+ PHA                    \ making a beep
+
+.^modifyOptsBEEP1
+
+ JSR &FFFF              \ Call the BEEP subroutine to make a short, high beep at
+                        \ the new volume level
+
+.^modifyOptsDELAY1
+
+ LDY #10                \ Wait for 10/50 of a second (0.2 seconds)
+ JSR &FFFF
+ 
+ PLA                    \ Restore the value of X we stored above
+ TAX
+
+ CLC                    \ Clear the C flag so we don't make both a low and high
+                        \ beep at the same time
 
  RTS                    \ Return from the subroutine to make a high beep to
                         \ indicate a volume change
@@ -409,10 +449,195 @@ ENDIF ; _ENABLE_VOLUME
  SEC                    \ Return from the subroutine with the C flag set, so we
  CLV                    \ can make a beep and delay for a bit, and the V flag
  RTS                    \ clear so we know not to make a high beep
+}
 
-.setVFlag
+.localDELAY
+{
+ JSR localWSCAN         \ Call WSCAN to wait for the vertical sync, so the whole
+                        \ screen gets drawn
 
- EQUB %01000000         \ Used to set the V flag to denote a volume change
+ DEY                    \ Decrement the counter in Y
+
+ BNE localDELAY         \ If Y isn't yet at zero, jump back to DELAY to wait
+                        \ for another vertical sync
+
+ RTS                    \ Return from the subroutine
+}
+
+.localWSCAN
+{
+ LDA #0                 \ Set DL to 0
+ STA DL
+
+ LDA DL                 \ Loop round these two instructions until DL is no
+ BEQ P%-2               \ longer 0 (DL gets set to 30 in the LINSCN routine,
+                        \ which is run when vertical sync has occurred on the
+                        \ video system, so DL will change to a non-zero value
+                        \ at the start of each screen refresh)
+
+ RTS                    \ Return from the subroutine
+}
+
+.localBEEP
+{
+.^modifyBeepDNOIZ1
+ LDX &FFFF              \ Set X to the DNOIZ configuration setting
+
+ BNE KYTB               \ If DNOIZ is non-zero, then sound is disabled, so
+                        \ return from the subroutine (as KYTB contains an RTS)
+
+ LDX #LO(localXX16)     \ Otherwise set (Y X) to point to the sound block in
+ LDY #HI(localXX16)     \ XX16
+
+ LDA #7                 \ Call OSWORD 7 to makes the sound, as described in the
+ JMP OSWORD             \ documentation for variable SFX, and return from the
+                        \ subroutine using a tail call
+.KYTB
+
+ RTS                    \ Return from the subroutine
+}
+.localXX16
+
+ EQUW &0003             \ The SOUND block for NOISE #32 - Short, high beep
+ EQUW &FFF1
+ EQUW &00BC
+ EQUW &0001
+
+.SetSoundFXVolume
+{
+ LDA addrVOL            \ Modify LDA &FFFF to LDA VOL
+ STA modifyFXVOL1+1
+ STA modifyFXVOL2+1
+ LDA addrVOL+1
+ STA modifyFXVOL1+2
+ STA modifyFXVOL2+2
+
+.modifyFXVOL1
+
+ LDA &FFFF              \ If volume is zero, jump to zero1 to set the SOUND
+ BEQ zero1              \ volume to 0
+
+ LDX #0                 \ Equivalent to SOUND volume of &F1 (-15)
+
+ LDA volume_table,X     \ Convert to 1 to 15 depending on volume setting
+
+ EOR #&F0               \ Flip 1-15 to 15-1 and negate to -15 to -1
+ CLC
+ ADC #1
+
+.zero1
+
+ PHA                    \ Store new volume on stack
+
+ BIT platform           \ If this is not 6502SP, jump to doDisc1 for disc code
+ BVC doDisc1
+
+                        \ This is run for the 6502SP version; we update the
+                        \ volAddr1,2,4 and volAddr3 addresses so the new volume
+                        \ levels get stored in addrSFX and addrSFX+1, where
+                        \ they can be used by the NWOSWD handler
+
+
+ LDA addrSFX            \ Set volAddr4 = addrSFX
+ STA volAddr1+1
+ STA volAddr2+1
+ STA volAddr4+1
+ LDA addrSFX+1
+ STA volAddr1+2
+ STA volAddr2+2
+ STA volAddr4+2
+
+ LDA addrSFX            \ Set volAddr3 = addrSFX + 1
+ CLC
+ ADC #1
+ STA volAddr3+1
+ LDA addrSFX+1
+ ADC #0
+ STA volAddr3+2
+
+ JMP updateVolumes      \ Store the new volumes
+
+.doDisc1
+
+                        \ This is run for the disc version; it modifies the
+                        \ volume settings in the SFX table
+
+ LDA addrSFX            \ Set volAddr1 = addrSFX + 13
+ CLC
+ ADC #13
+ STA volAddr1+1
+ LDA addrSFX+1
+ ADC #0
+ STA volAddr1+2
+
+ LDA addrSFX            \ Set volAddr2 = addrSFX + 17
+ CLC
+ ADC #17
+ STA volAddr2+1
+ LDA addrSFX+1
+ ADC #0
+ STA volAddr2+2
+
+ LDA addrSFX            \ Set volAddr3 = addrSFX + 21
+ CLC
+ ADC #21
+ STA volAddr3+1
+ LDA addrSFX+1
+ ADC #0
+ STA volAddr3+2
+
+ LDA addrSFX            \ Set volAddr4 = addrSFX + 25
+ CLC
+ ADC #25
+ STA volAddr4+1
+ LDA addrSFX+1
+ ADC #0
+ STA volAddr4+2
+
+.updateVolumes
+
+ LDA #&FF
+ STA localXX16+3        \ Scale beep in localBEEP (overwriting the &FF)
+
+ PLA                    \ Fetch new volume from stack
+
+ BNE P%+5               \ If volume is 0 we need to overwrite both bytes, so
+ STA localXX16+3        \ Scale beep in localBEEP (overwriting the &FF)
+
+ STA localXX16+2        \ Scale beep in localBEEP (overwriting the &F1)
+
+.volAddr1
+
+ STA &FFFF              \ Store in SFX+13 (overwriting the &F1)
+
+.volAddr2
+
+ STA &FFFF              \ Store in SFX+17 (overwriting the &F1)
+
+.volAddr4
+
+ STA &FFFF              \ Store in SFX+25 (overwriting the &F1)
+
+.modifyFXVOL2
+
+ LDA &FFFF              \ If volume is zero, jump to zero2 to set the SOUND
+ BEQ zero2              \ volume to 0
+
+ LDX #3                 \ Equivalent to SOUND volume of &F4 (-12)
+
+ LDA volume_table,X     \ Convert to 1 to 15 depending on volume setting
+
+ EOR #&F0               \ Flip 1-15 to 15-1 and negate to -15 to -1
+ CLC
+ ADC #1
+
+.zero2
+
+.volAddr3
+
+ STA &FFFF              \ Store in SFX+21 (overwriting the &F4)
+
+ RTS                    \ Return from the subroutine
 }
 
 ; library code

@@ -234,6 +234,10 @@ IF _ENABLE_VOLUME
 	cpx #16
 	bne loopx2
 
+    BIT platform        \ MM - Update the sound effects volume in SFX (but not
+    BMI P%+5            \ on a Master, i.e. when bit 7 of platform is set)
+    JSR SetSoundFXVolume
+
 	PLA                 \ MM - Restore registers Y, X, A
 	TAY
 	PLA
