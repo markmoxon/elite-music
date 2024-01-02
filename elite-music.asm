@@ -193,8 +193,8 @@ ENDIF ; _ENABLE_VOLUME
 .^modifyStopDNOIZ1
 
  LDA &FFFF              \ If DNOIZ is 1, then sound was enabled before we
- CMP #1                 \ disabled it for the music, so keep going to enable the
- BNE stop1              \ sound effects
+ CMP #1                 \ disabled it for the music, so keep going to disable
+ BNE stop1              \ the sound effects
 
 .^modifyStopDNOIZ2
 
@@ -508,9 +508,11 @@ ENDIF ; _ENABLE_VOLUME
  LDA addrVOL            \ Modify LDA &FFFF to LDA VOL
  STA modifyFXVOL1+1
  STA modifyFXVOL2+1
+ STA modifyFXVOL3+1
  LDA addrVOL+1
  STA modifyFXVOL1+2
  STA modifyFXVOL2+2
+ STA modifyFXVOL3+2
 
 .modifyFXVOL1
 
@@ -602,7 +604,7 @@ ENDIF ; _ENABLE_VOLUME
  PLA                    \ Fetch new volume from stack
 
  BNE P%+5               \ If volume is 0 we need to overwrite both bytes, so
- STA localXX16+3        \ Scale beep in localBEEP (overwriting the &FF)
+ STA localXX16+3        \ scale beep in localBEEP (overwriting the &FF)
 
  STA localXX16+2        \ Scale beep in localBEEP (overwriting the &F1)
 
@@ -637,7 +639,80 @@ ENDIF ; _ENABLE_VOLUME
 
  STA &FFFF              \ Store in SFX+21 (overwriting the &F4)
 
+                        \ We now update the envelope volumes in &08C0
+
+                        \ All envelope amplitudes (last 6 bytes of each
+                        \ envelope, AA, AD, AS, AR, ALA, ALD):
+                        \
+                        \ 8, -2, 0,   -1, 126,  44
+                        \ 6,  1, 0,   -2, 120, 126
+                        \ 1,  0, 0,   -1,   1,   1
+                        \ 22, 0, 0, -127, 126,   0
+                        \
+                        \ We can change the volumes by scaling the last two
+                        \ values, specifically the 120/126 and 44 values
+.modifyFXVOL3
+
+ LDA &FFFF              \ If volume is zero, jump to zero2 to set the SOUND
+ BEQ zero3              \ volume to 0
+
+ TAX                    \ Save VOL in X
+
+ ASL A                  \ A = 6 * VOL + 2 (so it's in range 0 to 44)
+ ASL A
+ STA addTemp
+ TXA
+ ASL A
+ CLC
+ ADC addTemp
+ ADC #2
+
+ STA &08CC              \ Change 4 in ALA and ALD to new volume
+
+ TXA                    \ A = 18 * VOL (so it's in range 0 to 126)
+ ASL A
+ ASL A
+ ASL A
+ ASL A
+ STA addTemp
+ TXA
+ ASL A
+ CLC
+ ADC addTemp
+
+ STA &08CB              \ Change 120 and 126 values in ALA and ALD to new volume
+ STA &08DB
+ STA &08DC
+ STA &08FB
+
+ LDX #1                 \ Set ALA and ALD to 1 for envelope 3
+ STX &08EB
+ STX &08EC
+
  RTS                    \ Return from the subroutine
+
+.zero3
+
+ LDA #0                 \ Zero ALA and ALD in all four envelopes to silence them
+
+ STA &08CB
+ STA &08CC
+
+ STA &08DB
+ STA &08DC
+
+ STA &08EB
+ STA &08EC
+
+ STA &08FB
+ STA &08FC
+
+ RTS                    \ Return from the subroutine
+
+.addTemp
+
+ EQUB 0
+
 }
 
 ; library code
