@@ -193,13 +193,13 @@ ENDIF ; _ENABLE_VOLUME
 .^modifyStopDNOIZ1
 
  LDA &FFFF              \ If DNOIZ is 1, then sound was enabled before we
- CMP #1                 \ disabled it for the music, so keep going to disable
+ CMP #1                 \ disabled it for the music, so keep going to re-enable
  BNE stop1              \ the sound effects
 
 .^modifyStopDNOIZ2
 
- LDA #0                 \ Set DNOIZ = 1 to disable sound effects while the
- STA &FFFF              \ music is playing
+ LDA #0                 \ Set DNOIZ = 0 to re-enable sound effects now that the
+ STA &FFFF              \ music is stopping
 
 .stop1
 
@@ -247,7 +247,7 @@ ENDIF ; _ENABLE_VOLUME
 
 .^modifyPlayDNOIZ1
 
- LDX &FFFF              \ If DNOIZ is &FF, then sound is disabled, so
+ LDX &FFFF              \ If DNOIZ is &FF, then sound is fully disabled, so
  CPX #&FF               \ return from the subroutine
  BEQ tune1
 
