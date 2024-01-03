@@ -138,14 +138,15 @@ ENDIF ; _ENABLE_VOLUME
  STA modifyPlayDNOIZ1+1 \        STA &FFFF to STA DNOIZ
  STA modifyPlayDNOIZ2+3  
  STA modifyStopDNOIZ1+1
- STA modifyStopDNOIZ2+3  
+ STA modifyStopDNOIZ2+3
  STA modifyOptsDNOIZ1+3
  STA modifyBeepDNOIZ1+1
  LDA addrDNOIZ+1
  STA modifyPlayDNOIZ1+2
  STA modifyPlayDNOIZ2+4
  STA modifyStopDNOIZ1+2
- STA modifyStopDNOIZ2+4  
+ STA modifyStopDNOIZ2+4
+ STA modifyOptsDNOIZ1+4
  STA modifyBeepDNOIZ1+2
 
  LDA addrVOL            \ Modify LDY &FFFF to LDY VOL
@@ -289,13 +290,13 @@ ENDIF ; _ENABLE_VOLUME
  CPX keyQ               \ If "Q" is not being pressed, skip to DK7
  BNE DK7
 
+ JSR StopCurrentTune    \ Stop the current tune
+
 .^modifyOptsDNOIZ1
 
  LDA #&FF
  STA &FFFF              \ "Q" is being pressed, so set DNOIZ to X, which is
                         \ non-zero (keyQ), so this will turn the sound off
-
- JSR StopCurrentTune    \ Stop the current tune
 
 .DK7
 
