@@ -508,17 +508,8 @@ ENDIF ; _ENABLE_VOLUME
 {
  LDA addrVOL            \ Modify LDA &FFFF to LDA VOL
  STA modifyFXVOL1+1
- STA modifyFXVOL2+1
- STA modifyFXVOL3+1
  LDA addrVOL+1
  STA modifyFXVOL1+2
- STA modifyFXVOL2+2
- STA modifyFXVOL3+2
-
-.modifyFXVOL1
-
- LDA &FFFF              \ If volume is zero, jump to zero1 to set the SOUND
- BEQ zero1              \ volume to 0
 
  LDX #0                 \ Equivalent to SOUND volume of &F1 (-15)
 
@@ -527,8 +518,6 @@ ENDIF ; _ENABLE_VOLUME
  EOR #&F0               \ Flip 1-15 to 15-1 and negate to -15 to -1
  CLC
  ADC #1
-
-.zero1
 
  PHA                    \ Store new volume on stack
 
@@ -621,11 +610,6 @@ ENDIF ; _ENABLE_VOLUME
 
  STA &FFFF              \ Store in SFX+25 (overwriting the &F1)
 
-.modifyFXVOL2
-
- LDA &FFFF              \ If volume is zero, jump to zero2 to set the SOUND
- BEQ zero2              \ volume to 0
-
  LDX #3                 \ Equivalent to SOUND volume of &F4 (-12)
 
  LDA volume_table,X     \ Convert to 1 to 15 depending on volume setting
@@ -633,8 +617,6 @@ ENDIF ; _ENABLE_VOLUME
  EOR #&F0               \ Flip 1-15 to 15-1 and negate to -15 to -1
  CLC
  ADC #1
-
-.zero2
 
 .volAddr3
 
@@ -652,12 +634,13 @@ ENDIF ; _ENABLE_VOLUME
                         \
                         \ We can change the volumes by scaling the last two
                         \ values, specifically the 120/126 and 44 values
-.modifyFXVOL3
+.modifyFXVOL1
 
- LDA &FFFF              \ If volume is zero, jump to zero2 to set the SOUND
- BEQ zero3              \ volume to 0
+ LDX &FFFF              \ If VOL is zero, bump it up to 1 in X (so sound effects
+ BNE P%+3               \ can still be heard at volume 0)
+ INX
 
- TAX                    \ Save VOL in X
+ TXA                    \ Copy VOL to A
 
  ASL A                  \ A = 6 * VOL + 2 (so it's in range 0 to 44)
  ASL A
@@ -689,24 +672,6 @@ ENDIF ; _ENABLE_VOLUME
  LDX #1                 \ Set ALA and ALD to 1 for envelope 3
  STX &08EB
  STX &08EC
-
- RTS                    \ Return from the subroutine
-
-.zero3
-
- LDA #0                 \ Zero ALA and ALD in all four envelopes to silence them
-
- STA &08CB
- STA &08CC
-
- STA &08DB
- STA &08DC
-
- STA &08EB
- STA &08EC
-
- STA &08FB
- STA &08FC
 
  RTS                    \ Return from the subroutine
 

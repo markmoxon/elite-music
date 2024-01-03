@@ -185,11 +185,14 @@ IF _ENABLE_VOLUME
 
 .modify
 
-	LDA &FFFF           \ MM - Grab volume 0-7 from VOL and scale to 0-15
+	LDA &FFFF           \ MM - Grab volume 0-7 from VOL and scale to 0-14 in X
 	ASL A
 	TAX
-	BEQ P%+3
+
+	BNE P%+3            \ Bump X to 1-14
 	INX
+
+	INX                 \ Bump X to 2-15
 
 ;	stx volume_store
 	lda #15
