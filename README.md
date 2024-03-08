@@ -6,7 +6,7 @@ For more information on the musical version of BBC Elite, which incorporates thi
 
 Build the ROM image using `make`.
 
-The same ROM can be used on the BBC Micro, 6502 Second Processor and BBC Master. The default ROM will work on the BBC Micro of Elite, but on the 6502SP and BBC Master, the ROM needs to be configured with the relevant addresses in the lookup table at &800F (which is done once the ROM image has been loaded into sideways RAM).
+The same ROM can be used on the BBC Micro, 6502 Second Processor and BBC Master. The default ROM will work on the BBC Micro version of Elite, but on the 6502SP and BBC Master versions, the ROM needs to be configured with the relevant addresses in the lookup table at &800F (which is done once the ROM image has been loaded into sideways RAM).
 
 * The 6502 Second Processor only needs to update the first two table entries, addrDNOIZ and addrplay1.
 
