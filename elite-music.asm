@@ -64,7 +64,7 @@ jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
 \ This table runs from &800F
 
 .platform       EQUB 0          \ 0 = BBC Micro, 64 = 6502SP, 128 = Master
-.addrDNOIZ      EQUW &03C6      \ Store DNOIZ here (in COMC+1 for disc version)
+.addrDNOIZ      EQUW &03C6      \ Store DNOIZ here
 .addrplay1      EQUW &120F+1    \ Store play1+1 here
 .addrDELAY      EQUW localDELAY \ Store DELAY here
 .addrSFX        EQUW &121D      \ Store SFX here
