@@ -10,7 +10,7 @@
  musicWorkspace = &0086 \ Must be the same in all platforms
  musicStatus    = &008F \ Must be the same in all platforms
 
- DL             = &0095 \ Disc version only, for use in localDELAY
+ DL             = &0095 \ BBC Micro version only, for use in localDELAY
 
  OSWORD = &FFF1         \ The address for the OSWORD routine
 
