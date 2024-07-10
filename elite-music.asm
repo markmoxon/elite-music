@@ -651,7 +651,7 @@ ENDIF ; _ENABLE_VOLUME
  ADC addTemp
  ADC #2
 
- STA &08CC              \ Change 4 in ALA and ALD to new volume
+ STA &08CC              \ Change 44 in ALA and ALD to new volume
 
  TXA                    \ A = 18 * VOL (so it's in range 0 to 126)
  ASL A
