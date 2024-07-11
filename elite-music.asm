@@ -80,6 +80,10 @@ jmp ProcessOptions  ; &800C \ MM - process enhanced music-related pause options
 
 \ MM - Volume variable for BBC Micro and 6502SP (BBC Master already has a
 \ volume variable VOL)
+\
+\ Note that the address of localVOL (&8021) is hard-coded into the .EXNO
+\ routine in the BBC Micro disc and cassette versions, to allow for explosions
+\ to be muted, so if this address changes, those versions will need updating
 
 .localVOL       EQUB 7          \ Starting volume is 7 (full)
 
