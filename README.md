@@ -2,7 +2,7 @@
 
 This repository contains source code for a sideways ROM that plays the music from the Commodore 64 version of Elite, backported to run on the BBC Micro and BBC Master. It also supports changing the music volume.
 
-For more information on the musical version of BBC Elite, which incorporates this ROM, see the [hacks section of the accompanying website](https://www.bbcelite.com/hacks/bbc_elite_with_music.html).
+For more information on the musical version of BBC Elite, which incorporates this ROM, see the [hacks section of the accompanying website](https://elite.bbcelite.com/hacks/bbc_elite_with_music.html).
 
 Build the ROM image using `make`.
 
