@@ -831,8 +831,10 @@
 total vgm player size is900 bytes
       vgm buffer size is2048 bytes
 .vgm_data1
+     8622   56 47 43 ... INCBIN "music/Elite.C64.Track1.vgc"
       vgc tune 1 size is3986 bytes
 .vgm_data2
+     95B4   56 47 43 ... INCBIN "music/Elite.C64.Track2.vgc"
       vgc tune 2 size is6352 bytes
           alignment lost124 bytes
 .vgm_buffer_start
