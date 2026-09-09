@@ -638,6 +638,7 @@ ENDIF ; _ENABLE_VOLUME
                         \
                         \ We can change the volumes by scaling the last two
                         \ values, specifically the 120/126 and 44 values
+
 .modifyFXVOL1
 
  LDX &FFFF              \ If VOL is zero, bump it up to 1 in X (so sound effects
